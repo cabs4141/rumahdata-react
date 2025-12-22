@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom"; // Menggunakan react-router-dom
-
-// Asumsikan ikon-ikon ini diimpor
+import { Link, useLocation } from "react-router-dom";
 import { CalenderIcon, ChevronDownIcon, GridIcon, HorizontaLDots, PieChartIcon, TableIcon, BoxCubeIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
-// Definisikan struktur menu (tanpa type annotation)
+// Definisikan struktur menu
 const navItems = [
   {
     icon: <GridIcon />,
@@ -19,9 +17,7 @@ const navItems = [
     subItems: [
       { name: "Sekolah", path: "/sekolah", pro: false },
       { name: "PTK", path: "/ptk", pro: false },
-      { name: "Siswa", path: "/siswa", pro: false },
-      { name: "Kurikulum", path: "/kurikulum", pro: false },
-      { name: "Sarana Prasarana", path: "/sarpras", pro: false },
+      { name: "Kegiatan", path: "/kegiatan", pro: false },
     ],
   },
   {
@@ -40,10 +36,7 @@ const othersItems = [
   {
     icon: <PieChartIcon />,
     name: "Charts",
-    subItems: [
-      { name: "Line Chart", path: "/line-chart", pro: false },
-      { name: "Bar Chart", path: "/bar-chart", pro: false },
-    ],
+    subItems: [{ name: "Line Chart", path: "/line-chart", pro: false }],
   },
 ];
 
@@ -178,14 +171,14 @@ const AppSidebar = () => {
             // TAMBAHKAN 'hidden md:flex' di sini
             <div className="hidden md:flex flex-row justify-between items-center w-full">
               {/* Logo dan Teks Lebar (HANYA MUNCUL DARI MD KE ATAS) */}
-              <img className="dark:hidden" src="/public/images/logo/sd.png" alt="Logo" width={50} height={30} />
-              <img className="hidden dark:block" src="/public/images/logo/sd.png" alt="Logo" width={50} height={30} />
+              <img className="dark:hidden" src="/images/logo/sd.png" alt="Logo" width={50} height={30} />
+              <img className="hidden dark:block" src="/images/logo/sd.png" alt="Logo" width={50} height={30} />
               <p className="font-semibold text-blue-light-700 ml-4">Rumah Data BGTK NTB</p>
             </div>
           ) : (
             // Logo Kecil (MUNCUL KETIKA SIDEBAR MINIMIZE)
             // Pastikan ini tersembunyi sepenuhnya di mode mobile jika sidebar tertutup.
-            <img className="hidden lg:block" src="/public/images/logo/sd.png" alt="Logo" width={32} height={32} />
+            <img className="hidden lg:block" src="/images/logo/sd.png" alt="Logo" width={32} height={32} />
           )}
         </Link>
       </div>

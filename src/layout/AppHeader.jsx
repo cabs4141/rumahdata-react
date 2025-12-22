@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-
 import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/common/ThemeToggleButton";
@@ -84,9 +83,9 @@ const AppHeader = () => {
           <Link to="/" className="lg:hidden">
             <div className="flex flex-row font-semibold text-blue-light-700 items-center">
               {/* Logo untuk mode Light */}
-              <img className="dark:hidden" src="/public/images/logo/sd.png" alt="Logo BGTK" width={32} height={32} />
+              <img className="dark:hidden" src="/images/logo/sd.png" alt="Logo BGTK" width={32} height={32} />
               {/* Logo untuk mode Dark */}
-              <img className="hidden dark:block" src="/public/images/logo/sd.png" alt="Logo BGTK Dark" width={32} height={32} />
+              <img className="hidden dark:block" src="/images/logo/sd.png" alt="Logo BGTK Dark" width={32} height={32} />
               <p className="text-xs px-2">Rumah Data BGTK NTB</p>
             </div>
           </Link>

@@ -1,5 +1,6 @@
-// src/stores/usePtkStore.js
 import { create } from "zustand";
+import axios from "axios";
+const API_URL = import.meta.env.VITE_API_URL;
 
 export const usePtkStore = create((set) => ({
   // --- STATE ---
@@ -7,29 +8,24 @@ export const usePtkStore = create((set) => ({
   isLoading: false, // Status untuk menunjukkan pemuatan sedang berjalan
   error: null, // Menyimpan pesan error jika gagal
 
-  // --- ACTIONS ---
-
-  // Action asinkron untuk mengambil data dari API
   fetchPtk: async () => {
     // 1. Set status loading menjadi true
     set({ isLoading: true, error: null });
 
     try {
-      const response = await fetch("http://localhost:3000/api/ptk");
+      const response = await axios.get("http://localhost:3000/api/ptk");
 
-      if (!response.ok) {
+      if (!response.status === 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
+      const data = await response.data;
 
-      // 2. Jika berhasil: update state data dan set loading ke false
       set({
-        ptkData: data,
+        ptkData: data.data,
         isLoading: false,
       });
     } catch (error) {
-      // 3. Jika gagal: simpan error dan set loading ke false
       console.error("Failed to fetch PTK data:", error);
       set({
         isLoading: false,

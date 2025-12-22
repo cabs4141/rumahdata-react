@@ -3,7 +3,6 @@ import SignIn from "./pages/AuthPages/SignIn";
 import SignUp from "./pages/AuthPages/SignUp";
 import NotFound from "./pages/OtherPage/NotFound";
 import LineChart from "./pages/Charts/LineChart";
-import BarChart from "./pages/Charts/BarChart";
 import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
@@ -11,6 +10,7 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Ptk from "./pages/DataPage/Ptk";
 import Sekolah from "./pages/DataPage/Sekolah";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import Kegiatan from "./pages/Kegiatan/Kegiatan";
 
 export default function App() {
   return (
@@ -29,13 +29,10 @@ export default function App() {
             {/* Sekolah */}
             <Route path="/sekolah" element={<Sekolah />} />
             <Route path="/ptk" element={<Ptk />} />
-            <Route path="/siswa" element={<Calendar />} />
-            <Route path="/kurikulum" element={<Calendar />} />
-            <Route path="/sarpras" element={<Calendar />} />
+            <Route path="/kegiatan" element={<Kegiatan />} />
 
             {/* Charts */}
             <Route path="/line-chart" element={<LineChart />} />
-            <Route path="/bar-chart" element={<BarChart />} />
           </Route>
 
           {/* Auth Layout */}
