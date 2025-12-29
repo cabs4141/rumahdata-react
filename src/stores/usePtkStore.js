@@ -11,9 +11,9 @@ export const usePtkStore = create((set) => ({
   fetchPtk: async () => {
     // 1. Set status loading menjadi true
     set({ isLoading: true, error: null });
-
+    const token = localStorage.getItem("token");
     try {
-      const response = await axios.get("http://localhost:3000/api/ptk");
+      const response = await axios.get("http://localhost:3000/api/ptk", { headers: { Authorization: `Beaerer ${token}`, Accept: "application/json" } });
 
       if (!response.status === 200) {
         throw new Error(`HTTP error! status: ${response.status}`);

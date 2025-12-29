@@ -1,12 +1,50 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
-
 import Button from "../ui/button/Button";
+import { useUserStore } from "../../stores/useUserStore";
+import { jwtDecode } from "jwt-decode";
 
-export default function SignInForm() {
+const SignInForm = () => {
+  const navigate = useNavigate();
+  const { login, token } = useUserStore();
+  const [payload, setPayload] = useState({
+    nip: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setPayload({
+      ...payload,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      login(payload);
+      navigate("/");
+    } catch (error) {
+      console.log("terjadi kesalahan:", error);
+      alert(error.response.data.message);
+      navigate("/signin");
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      // const decoded = jwtDecode(token)
+      // const statusUser = decoded.
+      navigate("/");
+    } else {
+      navigate("/signin");
+    }
+  }, [token, navigate]);
+
   const [showPassword, setShowPassword] = useState(false);
   return (
     <div className="flex flex-col flex-1">
@@ -17,20 +55,20 @@ export default function SignInForm() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Masukkan NIP dan kata sandi</p>
           </div>
           <div>
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="space-y-6">
                 <div>
                   <Label>
                     NIP <span className="text-error-500">*</span>{" "}
                   </Label>
-                  <Input placeholder="NIP" />
+                  <Input type="text" name="nip" value={payload.nip} onChange={handleChange} required placeholder="NIP" />
                 </div>
                 <div>
                   <Label>
                     Password <span className="text-error-500">*</span>{" "}
                   </Label>
                   <div className="relative">
-                    <Input type={showPassword ? "text" : "password"} placeholder="Isi password" />
+                    <Input type={showPassword ? "text" : "password"} placeholder="Isi password" name="password" value={payload.password} onChange={handleChange} required />
                     <span onClick={() => setShowPassword(!showPassword)} className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2">
                       {showPassword ? <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" /> : <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />}
                     </span>
@@ -38,7 +76,7 @@ export default function SignInForm() {
                 </div>
                 <div>
                   <Button className="w-full" size="sm">
-                    Sign in
+                    Masuk
                   </Button>
                 </div>
               </div>
@@ -57,4 +95,6 @@ export default function SignInForm() {
       </div>
     </div>
   );
-}
+};
+
+export default SignInForm;

@@ -1,32 +1,49 @@
-// src/stores/useUserStore.js
 import { create } from "zustand";
+import axios from "axios";
 
-// Mendefinisikan struktur state awal dan fungsi (actions)
 export const useUserStore = create((set) => ({
-  // --- STATE ---
-  isLoggedIn: false,
-  userInfo: null,
+  // Pastikan fallback ke string kosong
+  token: localStorage.getItem("token") || "",
 
-  // Action untuk login
-  login: (userData) =>
-    set((state) => ({
-      isLoggedIn: true,
-      userInfo: userData,
-    })),
+  getUserLists: async () => {
+    try {
+      const response = await axios.get("http://localhost:3000/");
+    } catch (error) {}
+  },
 
-  // Action untuk logout
-  logout: () =>
-    set({
-      isLoggedIn: false,
-      userInfo: null,
-    }),
+  login: async (payload) => {
+    try {
+      const response = await axios.post("http://localhost:3000/api/auth/login", payload, { headers: { "Content-Type": "application/json" } });
+      if (response.status === 200) console.log("berhasil login store", response);
+      localStorage.setItem("token", response.data.token);
+      set({ token: response.data.token });
+    } catch (error) {
+      console.log(error);
+      alert(error.response.data.message);
+    }
+  },
 
-  // Action untuk update nama (contoh modifikasi state)
-  updateUserName: (newName) =>
-    set((state) => ({
-      userInfo: {
-        ...state.userInfo,
-        name: newName, // Pastikan userInfo tidak null sebelum diakses
-      },
-    })),
+  register: async (payload) => {
+    try {
+      const response = await axios.post("http://localhost:3000/api/auth/register", payload);
+      if (response.status === 200) {
+        console.log("berhasil register dari store");
+        alert("register berhasil");
+        return true;
+      }
+    } catch (error) {
+      console.log(error);
+      alert(error.response.data.error);
+      return false;
+    }
+  },
+
+  logout: () => {
+    localStorage.removeItem("token");
+    set({ token: null });
+  },
+
+  refreshUser: () => {
+    set({ userInfo: getDecodedToken(), isLoggedIn: !!getDecodedToken() });
+  },
 }));

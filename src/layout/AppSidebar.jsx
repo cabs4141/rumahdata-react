@@ -1,10 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { CalenderIcon, ChevronDownIcon, GridIcon, HorizontaLDots, PieChartIcon, TableIcon, BoxCubeIcon } from "../icons";
+import { CalenderIcon, ChevronDownIcon, GridIcon, HorizontaLDots, PieChartIcon, TableIcon, BoxCubeIcon, UserIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 
 // Definisikan struktur menu
 const navItems = [
+  {
+    icon: <UserIcon />,
+    name: "User",
+    path: "/user",
+  },
   {
     icon: <GridIcon />,
     name: "Dashboard",
@@ -13,23 +18,22 @@ const navItems = [
   {
     icon: <TableIcon />,
     name: "Data",
-    path: "/sekolah",
     subItems: [
       { name: "Sekolah", path: "/sekolah", pro: false },
       { name: "PTK", path: "/ptk", pro: false },
       { name: "Kegiatan", path: "/kegiatan", pro: false },
     ],
   },
-  {
-    icon: <BoxCubeIcon />,
-    name: "Pengaturan",
-    path: "/pengaturan",
-  },
-  {
-    name: "Kalender",
-    icon: <CalenderIcon />,
-    path: "/kalender",
-  },
+  // {
+  //   icon: <BoxCubeIcon />,
+  //   name: "Pengaturan",
+  //   path: "/pengaturan",
+  // },
+  // {
+  //   name: "Kalender",
+  //   icon: <CalenderIcon />,
+  //   path: "/kalender",
+  // },
 ];
 
 const othersItems = [

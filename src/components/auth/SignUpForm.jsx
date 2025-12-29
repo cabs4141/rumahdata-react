@@ -1,13 +1,49 @@
-import { useState } from "react";
-import { Link } from "react-router";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router";
 import { EyeCloseIcon, EyeIcon } from "../../icons";
 import Label from "../form/Label";
 import Input from "../form/input/InputField";
+import { useUserStore } from "../../stores/useUserStore";
+import Button from "../ui/button/Button";
 // import Checkbox from "../form/input/Checkbox";
 
 export default function SignUpForm() {
-  const [showPassword, setShowPassword] = useState(false);
   // const [isChecked, setIsChecked] = useState(false);
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const { register, token } = useUserStore();
+  const [payload, setPayload] = useState({
+    nip: "",
+    nama: "",
+    password: "",
+  });
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setPayload({
+      ...payload,
+      [name]: value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const isSuccess = await register(payload);
+      if (isSuccess) {
+        navigate("/signin");
+      }
+    } catch (error) {
+      console.log("terjadi kesalahan register komponen", error);
+      alert(error.response.data.message);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      navigate("/");
+    }
+  }, [token, navigate]);
   return (
     <div className="flex flex-col flex-1 w-full overflow-y-auto lg:w-1/2 no-scrollbar">
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
@@ -17,21 +53,21 @@ export default function SignUpForm() {
             <p className="text-sm text-gray-500 dark:text-gray-400">Masukkan NIP dan Password untuk daftar</p>
           </div>
           <div>
-            <form>
+            <form onSubmit={handleSubmit}>
               <div className="space-y-5">
                 {/* <!-- Name --> */}
                 <div>
                   <Label>
                     Nama Lengkap<span className="text-error-500">*</span>
                   </Label>
-                  <Input type="email" id="email" name="email" placeholder="Masukkan Nama Lengkap" />
+                  <Input type="text" id="nama" name="nama" placeholder="Masukkan Nama Lengkap" onChange={handleChange} />
                 </div>
                 {/* <!-- NIP --> */}
                 <div>
                   <Label>
                     NIP<span className="text-error-500">*</span>
                   </Label>
-                  <Input type="text" id="texr" name="text" placeholder="Masukkan NIP" />
+                  <Input type="text" id="nip" name="nip" placeholder="Masukkan NIP" onChange={handleChange} />
                 </div>
                 {/* <!-- Password --> */}
                 <div>
@@ -39,7 +75,7 @@ export default function SignUpForm() {
                     Password<span className="text-error-500">*</span>
                   </Label>
                   <div className="relative">
-                    <Input placeholder="Masukkan Password" type={showPassword ? "text" : "password"} />
+                    <Input placeholder="Masukkan Password" type={showPassword ? "text" : "password"} onChange={handleChange} name="password" />
                     <span onClick={() => setShowPassword(!showPassword)} className="absolute z-30 -translate-y-1/2 cursor-pointer right-4 top-1/2">
                       {showPassword ? <EyeIcon className="fill-gray-500 dark:fill-gray-400 size-5" /> : <EyeCloseIcon className="fill-gray-500 dark:fill-gray-400 size-5" />}
                     </span>
@@ -54,7 +90,9 @@ export default function SignUpForm() {
                 </div> */}
                 {/* <!-- Button --> */}
                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">Daftar</button>
+                  <Button className="w-full" size="sm">
+                    Daftar
+                  </Button>
                 </div>
               </div>
             </form>

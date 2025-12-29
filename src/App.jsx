@@ -11,6 +11,8 @@ import Ptk from "./pages/DataPage/Ptk";
 import Sekolah from "./pages/DataPage/Sekolah";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Kegiatan from "./pages/Kegiatan/Kegiatan";
+import UserProfiles from "./pages/UserProfiles";
+import UserLists from "./pages/UserLists";
 
 export default function App() {
   return (
@@ -25,6 +27,7 @@ export default function App() {
             {/* Others Page */}
             <Route path="/kalender" element={<Calendar />} />
             <Route path="/pengaturan" element={<Blank />} />
+            <Route path="/user" element={<UserLists />} />
 
             {/* Sekolah */}
             <Route path="/sekolah" element={<Sekolah />} />
