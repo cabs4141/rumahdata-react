@@ -9,9 +9,10 @@ export const useUserStore = create((set, get) => ({
 
   getUserLists: async () => {
     set({ loading: true });
-    const token = get().token;
-    if (!token) {
+    const token = localStorage.getItem("token");
+    if (!token || token === "") {
       console.error("Token tidak ditemukan!");
+      getState().logout();
       return;
     }
     try {
@@ -21,11 +22,13 @@ export const useUserStore = create((set, get) => ({
         userList: data,
         loading: false,
       });
+      console.log("ini token dari user store sekarang:", token);
     } catch (error) {
       console.log("error dari user lists store:", error);
       set({
-        loadin: false,
+        loading: false,
       });
+      get().logout();
     }
   },
 

@@ -7,17 +7,21 @@ import { Outlet } from "react-router";
 const LayoutContent = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
+  // Tentukan lebar margin/lebar sidebar agar bisa dipakai di Header juga
+  const sidebarWidth = isExpanded || isHovered ? "lg:pl-[290px]" : "lg:pl-[90px]";
   return (
-    <div className="min-h-screen xl:flex">
-      <div>
-        <AppSidebar />
-        <Backdrop />
-      </div>
-      <div className={`flex-1 transition-all duration-300 ease-in-out ${isExpanded || isHovered ? "lg:ml-[290px]" : "lg:ml-[90px]"} ${isMobileOpen ? "ml-0" : ""}`}>
+    <div className="flex">
+      {/* Sidebar tetap di luar */}
+      <AppSidebar />
+      <Backdrop />
+      {/* Main Content Area */}
+      // Di dalam LayoutContent pada AppLayout.jsx
+      <div className={`flex flex-col ml-0 transition-all duration-300 ease-in-out min-w-0 ${sidebarWidth} ${isMobileOpen ? "ml-0" : ""}`}>
         <AppHeader />
-        <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6 ">
+        <main className="p-4 mx-auto w-full max-w-full md:p-6 mt-[72px] lg:mt-[80px] overflow-hidden">
+          {/* overflow-hidden di sini memastikan tidak ada bocor ke samping */}
           <Outlet />
-        </div>
+        </main>
       </div>
     </div>
   );

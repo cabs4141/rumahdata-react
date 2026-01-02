@@ -7,9 +7,10 @@ export const usePtkStore = create((set) => ({
   isLoading: false,
   error: null,
   totalPages: 0,
+  currentPage: 1,
 
   fetchPtk: async (params) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, currentPage: params });
     const token = localStorage.getItem("token");
     try {
       const response = await axios.get(`http://localhost:3000/api/ptk?page=${params}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });

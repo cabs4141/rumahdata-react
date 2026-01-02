@@ -13,20 +13,25 @@ import { useEffect, useState } from "react";
 const COLUMNS = ["ID PTK", "NAMA LENGKAP", "ID SEKOLAH", "NIP", "JENIS KELAMIN", "TEMPAT LAHIR", "NIK", "STATUS"];
 
 export default function PtkTable() {
-  const { fetchPtk, ptkData, isLoading, totalPages } = usePtkStore();
-  const [page, setPage] = useState(1);
+  const { fetchPtk, ptkData, isLoading, totalPages, currentPage } = usePtkStore();
+
+  console.log("render tabel ptk");
 
   const nextPage = () => {
-    setPage((prev) => prev + 1);
+    if (currentPage < totalPages) {
+      fetchPtk(currentPage + 1);
+    }
   };
 
   const prevPage = () => {
-    setPage((prev) => Math.max(1, prev - 1));
+    if (currentPage > 1) {
+      fetchPtk(currentPage - 1);
+    }
   };
 
   useEffect(() => {
-    fetchPtk(page);
-  }, [fetchPtk, page]);
+    fetchPtk(currentPage);
+  }, []);
 
   const rows = Array.isArray(ptkData) ? ptkData : [];
   const totalHalaman = totalPages.toLocaleString("id-ID");
@@ -40,17 +45,43 @@ export default function PtkTable() {
   }
 
   return (
-    <Box sx={{ width: "100%", p: 2 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
+    <Box
+      sx={{
+        width: "100%",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden", // Mengunci Box agar tidak ikut melebar
+      }}
+    >
+      <Typography variant="h6" sx={{ p: 2, mb: 0, flexShrink: 0 }}>
         Data PTK
       </Typography>
 
-      <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 650 }} size="small">
+      <TableContainer
+        component={Paper}
+        sx={{
+          width: "100%", // Mengunci lebar sesuai Box
+          overflowX: "auto", // Scroll horizontal hanya di sini
+          overflowY: "auto", // Scroll vertikal hanya di sini
+          boxShadow: "none",
+          borderRadius: 0,
+        }}
+      >
+        <Table stickyHeader sx={{ minWidth: 1200 }}>
+          {/* minWidth besar memaksa scroll horizontal muncul di dalam TableContainer */}
           <TableHead>
-            <TableRow sx={{ bgcolor: "#f5f5f5" }}>
+            <TableRow>
               {COLUMNS.map((col) => (
-                <TableCell key={col} sx={{ fontWeight: "bold" }}>
+                <TableCell
+                  key={col}
+                  sx={{
+                    fontWeight: "bold",
+                    bgcolor: "grey.100",
+                    whiteSpace: "nowrap",
+                    zIndex: 10,
+                  }}
+                >
                   {col}
                 </TableCell>
               ))}
@@ -81,22 +112,23 @@ export default function PtkTable() {
           </TableBody>
         </Table>
       </TableContainer>
-      <div className="flex flex-row gap-8 p-2 justify-end">
-        <div className="flex flex-row gap-2">
-          halaman
-          <p className="text-red-600 ">{page}</p>
-          dari
-          <p className="text-red-600 ">{totalHalaman}</p>
+
+      {/* Pagination tetap di bawah dan tidak bergeser */}
+      <Box sx={{ p: 2, borderTop: 1, borderColor: "divider", flexShrink: 0 }}>
+        <div className="flex flex-row gap-8 justify-end items-center">
+          <div className="text-sm">
+            halaman <span className="text-red-600 font-bold">{currentPage}</span> dari <span className="text-red-600 font-bold">{totalHalaman}</span>
+          </div>
+          <div className="flex gap-2">
+            <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={prevPage}>
+              Prev
+            </button>
+            <button className="bg-blue-600 text-white px-3 py-1 rounded" onClick={nextPage}>
+              Next
+            </button>
+          </div>
         </div>
-        <div className="flex gap-4">
-          <button className="bg-blue-600 text-white rounded-md px-2 py-0.5" onClick={prevPage}>
-            prev
-          </button>
-          <button className="bg-blue-600 text-white rounded-md px-2 py-0.5" onClick={nextPage}>
-            next
-          </button>
-        </div>
-      </div>
+      </Box>
     </Box>
   );
 }

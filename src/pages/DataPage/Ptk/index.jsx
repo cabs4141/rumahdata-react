@@ -1,11 +1,9 @@
-// src/components/Ptk.jsx
-import React, { useEffect } from "react";
-import { usePtkStore } from "../../../stores/usePtkStore";
 import PtkTable from "./table";
 
 const Ptk = () => {
   return (
-    <div className="overflow-x-auto border border-gray-300 rounded-lg shadow-sm mt-18">
+    // Gunakan w-full dan max-w-full untuk mengunci lebar
+    <div className="w-full max-w-full flex flex-col h-[calc(100vh-140px)] border border-gray-300 rounded-lg shadow-sm bg-white dark:bg-gray-900 overflow-hidden">
       <PtkTable />
     </div>
   );
