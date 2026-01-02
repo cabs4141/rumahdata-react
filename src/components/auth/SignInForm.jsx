@@ -9,7 +9,7 @@ import { jwtDecode } from "jwt-decode";
 
 const SignInForm = () => {
   const navigate = useNavigate();
-  const { login, token } = useUserStore();
+  const { login, token, logout } = useUserStore();
   const [payload, setPayload] = useState({
     nip: "",
     password: "",
@@ -28,6 +28,7 @@ const SignInForm = () => {
     try {
       login(payload);
       navigate("/");
+      console.log("ter navigate ke /");
     } catch (error) {
       console.log("terjadi kesalahan:", error);
       alert(error.response.data.message);
@@ -37,13 +38,15 @@ const SignInForm = () => {
 
   useEffect(() => {
     if (token) {
-      // const decoded = jwtDecode(token)
-      // const statusUser = decoded.
-      navigate("/");
-    } else {
-      navigate("/signin");
+      try {
+        jwtDecode(token);
+        navigate("/");
+      } catch (error) {
+        console.log("Token invalid di halaman login, membersihkan...");
+        logout();
+      }
     }
-  }, [token, navigate]);
+  }, [token, navigate, logout]);
 
   const [showPassword, setShowPassword] = useState(false);
   return (

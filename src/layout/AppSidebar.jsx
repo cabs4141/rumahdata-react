@@ -162,11 +162,9 @@ const AppSidebar = () => {
   return (
     <aside
       className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
-        // Menghapus logika isHovered. Sidebar hanya diperluas oleh isExpanded atau isMobileOpen
         ${isExpanded || isMobileOpen ? "w-[290px]" : "w-[90px]"}
         ${isMobileOpen ? "translate-x-0" : "-translate-x-full"}
         lg:translate-x-0`}
-      // Menghapus event onMouseEnter dan onMouseLeave
     >
       {/* Menghapus referensi ke isHovered */}
       <div className={`py-6 flex ${!isExpanded ? "lg:justify-center" : "justify-start"}`}>
@@ -177,7 +175,10 @@ const AppSidebar = () => {
               {/* Logo dan Teks Lebar (HANYA MUNCUL DARI MD KE ATAS) */}
               <img className="dark:hidden" src="/images/logo/sd.png" alt="Logo" width={50} height={30} />
               <img className="hidden dark:block" src="/images/logo/sd.png" alt="Logo" width={50} height={30} />
-              <p className="font-semibold text-blue-light-700 ml-4">Rumah Data BGTK NTB</p>
+              <div className="font-semibold text-blue-light-700 ml-4">
+                <p>Rumah Data</p>
+                <p>BGTK NTB</p>
+              </div>
             </div>
           ) : (
             // Logo Kecil (MUNCUL KETIKA SIDEBAR MINIMIZE)

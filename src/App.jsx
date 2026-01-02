@@ -11,10 +11,9 @@ import Ptk from "./pages/DataPage/Ptk";
 import Sekolah from "./pages/DataPage/Sekolah";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Kegiatan from "./pages/Kegiatan/Kegiatan";
-import UserProfiles from "./pages/UserProfiles";
-import UserLists from "./pages/UserLists";
+import User from "./pages/User/User";
 
-export default function App() {
+const App = () => {
   return (
     <>
       <Router>
@@ -27,7 +26,7 @@ export default function App() {
             {/* Others Page */}
             <Route path="/kalender" element={<Calendar />} />
             <Route path="/pengaturan" element={<Blank />} />
-            <Route path="/user" element={<UserLists />} />
+            <Route path="/user" element={<User />} />
 
             {/* Sekolah */}
             <Route path="/sekolah" element={<Sekolah />} />
@@ -48,4 +47,6 @@ export default function App() {
       </Router>
     </>
   );
-}
+};
+
+export default App;

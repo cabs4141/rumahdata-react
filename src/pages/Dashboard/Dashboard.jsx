@@ -1,36 +1,49 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { useUserStore } from "../../stores/useUserStore";
 import { jwtDecode } from "jwt-decode";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { token } = useUserStore();
+  const { logout } = useUserStore();
 
+  // State untuk mencegah konten muncul sebelum token divalidasi
   useEffect(() => {
-    // Jika token tidak ada, kosong, atau string "undefined", langsung tendang keluar
-    if (!token || token === "" || token === "undefined" || token === "null") {
+    console.log("render komponen dashboard dari use effect");
+    const token = localStorage.getItem("token");
+    if (!token) {
       navigate("/signin", { replace: true });
-      return; // PENTING: return agar code di bawah tidak dijalankan
+      return;
     }
 
-    // DECODE (Setelah dipastikan token ada)
     try {
+      // 1. Decode
       const decoded = jwtDecode(token);
-      const statusUser = decoded.status;
-      console.log("status user:", statusUser);
 
-      // Opsional: Jika token rusak/invalid format, catch akan menangkapnya
+      // 2. Cek Expired (Frontend cuma bisa cek ini)
+      const currentTime = Date.now() / 1000;
+      if (decoded.exp < currentTime) {
+        throw new Error("Token expired");
+      }
+
+      // 3. (PENTING) Cek kelengkapan data
+      // Kadang token rusak isinya jadi null atau kosong
+      if (!decoded.sub && !decoded.id && !decoded.nip) {
+        throw new Error("Token format valid tapi isinya kosong/rusak");
+      }
     } catch (error) {
-      console.error("Token rusak:", error);
-      navigate("/signin", { replace: true });
+      console.log("Tertangkap error:", error.message); // Cek console ini
+      logout();
+      navigate("/signin");
     }
-  }, [token, navigate]);
+  }, []);
 
+  // Konten hanya muncul jika isAuthorized === true
   return (
-    <>
-      <div className="flex gap-4 md:gap-6 items-center justify-center">selamat datang di dashboard</div>
-    </>
+    <div className="mt-24 flex gap-4 md:gap-6 items-center justify-center">
+      <h1 className="text-2xl font-bold">Selamat Datang di Dashboard</h1>
+      <p>Data rahasia user...</p>
+    </div>
   );
 };
 

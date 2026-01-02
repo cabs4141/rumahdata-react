@@ -8,18 +8,7 @@ const UserDropdown = () => {
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const { token, logout } = useUserStore();
-
-  const userInfo = useMemo(() => {
-    // Validasi token sederhana agar tidak crash
-    if (token && token !== "" && token !== "null" && token !== "undefined") {
-      try {
-        return jwtDecode(token);
-      } catch (error) {
-        return null;
-      }
-    }
-    return null;
-  }, [token]);
+  const [userInfo, setUserInfo] = useState(null);
 
   function toggleDropdown() {
     setIsOpen(!isOpen);
@@ -34,6 +23,31 @@ const UserDropdown = () => {
     logout();
     navigate("/signin");
   };
+
+  // 2. Gunakan useEffect untuk validasi token & set user info
+  useEffect(() => {
+    if (token && token !== "" && token !== "null" && token !== "undefined") {
+      try {
+        const decoded = jwtDecode(token);
+
+        // Opsional: Cek apakah expired berdasarkan waktu (exp)
+        const currentTime = Date.now() / 1000;
+        if (decoded.exp && decoded.exp < currentTime) {
+          throw new Error("Token expired");
+        }
+
+        setUserInfo(decoded);
+      } catch (error) {
+        // PENTING: Jika token error/expired, HAPUS token dari store dulu
+        // agar SignInForm tidak mengira kita masih login.
+        logout();
+        navigate("/signin");
+      }
+    } else {
+      // Jika tidak ada token sama sekali
+      navigate("/signin");
+    }
+  }, [token, navigate, logout]);
 
   return (
     <div className="relative">

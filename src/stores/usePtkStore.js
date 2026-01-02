@@ -1,20 +1,18 @@
 import { create } from "zustand";
 import axios from "axios";
-const API_URL = import.meta.env.VITE_API_URL;
+import { useUserStore } from "./useUserStore";
 
 export const usePtkStore = create((set) => ({
-  // --- STATE ---
-  ptkData: [], // Data PTK yang akan disimpan
-  isLoading: false, // Status untuk menunjukkan pemuatan sedang berjalan
-  error: null, // Menyimpan pesan error jika gagal
+  ptkData: [],
+  isLoading: false,
+  error: null,
+  totalPages: 0,
 
-  fetchPtk: async () => {
-    // 1. Set status loading menjadi true
+  fetchPtk: async (params) => {
     set({ isLoading: true, error: null });
     const token = localStorage.getItem("token");
     try {
-      const response = await axios.get("http://localhost:3000/api/ptk", { headers: { Authorization: `Beaerer ${token}`, Accept: "application/json" } });
-
+      const response = await axios.get(`http://localhost:3000/api/ptk?page=${params}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
       if (!response.status === 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -24,14 +22,16 @@ export const usePtkStore = create((set) => ({
       set({
         ptkData: data.data,
         isLoading: false,
+        totalPages: data.totalPages,
       });
     } catch (error) {
       console.error("Failed to fetch PTK data:", error);
       set({
         isLoading: false,
-        error: error.message || "Gagal memuat data PTK.",
-        ptkData: [], // Kosongkan data jika ada error
+        error: error.response?.data?.message || error.message || "Gagal memuat data PTK.",
+        ptkData: [],
       });
+      useUserStore.getState().logout();
     }
   },
 }));

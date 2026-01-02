@@ -7,28 +7,30 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import { usePtkStore } from "../../../stores/usePtkStore";
 import { useEffect, useState } from "react";
+import { useSekolahStore } from "../../../stores/useSekolahStore";
 
-const COLUMNS = ["ID PTK", "NAMA LENGKAP", "ID SEKOLAH", "NIP", "JENIS KELAMIN", "TEMPAT LAHIR", "NIK", "STATUS"];
+const COLUMNS = ["ID SEKOLAH", "NAMA SEKOLAH", "NPSN", "BENTUK PENDIDIKAN", "JENJANG", "ALAMAT JALAN", "DESA KELURAHAN", "KECAMATAN", "KABUPATEN", "PROVINSI"];
 
-export default function PtkTable() {
-  const { fetchPtk, ptkData, isLoading, totalPages } = usePtkStore();
+export default function SekolahTable() {
+  const { fetchSekolah, sekolahData, isLoading, totalPages } = useSekolahStore();
   const [page, setPage] = useState(1);
 
   const nextPage = () => {
     setPage((prev) => prev + 1);
+    console.log("next page");
   };
 
   const prevPage = () => {
     setPage((prev) => Math.max(1, prev - 1));
+    console.log("next page");
   };
 
   useEffect(() => {
-    fetchPtk(page);
-  }, [fetchPtk, page]);
+    fetchSekolah(page);
+  }, [fetchSekolah, page]);
 
-  const rows = Array.isArray(ptkData) ? ptkData : [];
+  const rows = Array.isArray(sekolahData) ? sekolahData : [];
   const totalHalaman = totalPages.toLocaleString("id-ID");
 
   if (isLoading) {
@@ -42,7 +44,7 @@ export default function PtkTable() {
   return (
     <Box sx={{ width: "100%", p: 2 }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Data PTK
+        Data Sekolah
       </Typography>
 
       <TableContainer component={Paper}>
@@ -60,20 +62,22 @@ export default function PtkTable() {
           <TableBody>
             {rows.length > 0 ? (
               rows.map((row, index) => (
-                <TableRow key={row?.ptk_id || index} hover>
-                  <TableCell>{row?.ptk_id}</TableCell>
-                  <TableCell sx={{ whiteSpace: "nowrap" }}>{row?.nama}</TableCell>
-                  <TableCell>{row?.sekolah_id}</TableCell>
-                  <TableCell>{row?.nip}</TableCell>
-                  <TableCell>{row?.jenis_kelamin}</TableCell>
-                  <TableCell>{row?.tempat_lahir}</TableCell>
-                  <TableCell>{row?.nik}</TableCell>
-                  <TableCell>{row?.status_kepegawaian}</TableCell>
+                <TableRow key={row.sekolah_id || index} hover>
+                  <TableCell>{row.sekolah_id}</TableCell>
+                  <TableCell>{row.nama}</TableCell>
+                  <TableCell sx={{ whiteSpace: "nowrap" }}>{row.npsn}</TableCell>
+                  <TableCell>{row.bentuk_pendidikan}</TableCell>
+                  <TableCell>{row.jenjang}</TableCell>
+                  <TableCell>{row.alamat_jalan}</TableCell>
+                  <TableCell>{row.desa_kelurahan}</TableCell>
+                  <TableCell>{row.kecamatan}</TableCell>
+                  <TableCell>{row.kabupaten}</TableCell>
+                  <TableCell>{row.provinsi}</TableCell>
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={8} align="center">
+                <TableCell colSpan={9} align="center">
                   Data tidak ditemukan
                 </TableCell>
               </TableRow>
