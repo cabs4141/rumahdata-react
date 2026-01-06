@@ -41,8 +41,7 @@ const Dashboard = () => {
   // Konten hanya muncul jika isAuthorized === true
   return (
     <div className="mt-24 flex gap-4 md:gap-6 items-center justify-center">
-      <h1 className="text-2xl font-bold">Selamat Datang di Dashboard</h1>
-      <p>Data rahasia user...</p>
+      <h1 className="text-2xl font-bold">Dashboard</h1>
     </div>
   );
 };
