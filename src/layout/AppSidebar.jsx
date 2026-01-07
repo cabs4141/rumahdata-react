@@ -8,12 +8,6 @@ import { useUserStore } from "../stores/useUserStore";
 // Definisikan struktur menu asli
 const navItems = [
   {
-    icon: <UserIcon />,
-    name: "User",
-    path: "/user",
-    roles: ["super_admin"],
-  },
-  {
     icon: <GridIcon />,
     name: "Dashboard",
     path: "/",
@@ -28,6 +22,12 @@ const navItems = [
       { name: "PTK", path: "/ptk", pro: false },
       { name: "Kegiatan", path: "/kegiatan", pro: false },
     ],
+  },
+  {
+    icon: <UserIcon />,
+    name: "User",
+    path: "/user",
+    roles: ["super_admin"],
   },
 ];
 

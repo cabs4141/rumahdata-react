@@ -3,6 +3,8 @@ import AppHeader from "./AppHeader";
 import Backdrop from "./Backdrop";
 import AppSidebar from "./AppSidebar";
 import { Outlet } from "react-router";
+import { useNotificationStore } from "../stores/useNotifStore";
+import { Alert, Snackbar } from "@mui/material";
 
 const LayoutContent = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
@@ -14,11 +16,10 @@ const LayoutContent = () => {
       {/* Sidebar tetap di luar */}
       <AppSidebar />
       <Backdrop />
-      {/* Main Content Area */}
-      // Di dalam LayoutContent pada AppLayout.jsx
-      <div className={`flex flex-col ml-0 transition-all duration-300 ease-in-out min-w-0 ${sidebarWidth} ${isMobileOpen ? "ml-0" : ""}`}>
+
+      <div className={`flex flex-col  transition-all duration-300 ease-in-out min-w-0 ${sidebarWidth} ${isMobileOpen ? "ml-0" : ""}`}>
         <AppHeader />
-        <main className="p-4 mx-auto w-full max-w-full md:p-6 mt-[72px] lg:mt-[80px] overflow-hidden">
+        <main className="p-4 mx-auto w-full max-w-full md:p-6 mt-[72px] lg:mt-[70px] overflow-hidden">
           {/* overflow-hidden di sini memastikan tidak ada bocor ke samping */}
           <Outlet />
         </main>

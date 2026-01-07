@@ -7,13 +7,17 @@ import Calendar from "./pages/Calendar";
 import Blank from "./pages/Blank";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
-import Ptk from "./pages/DataPage/Ptk";
-import Sekolah from "./pages/DataPage/Sekolah";
+import Ptk from "./pages/DataPage/Ptk/Ptk";
+import Sekolah from "./pages/DataPage/Sekolah/Sekolah";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import Kegiatan from "./pages/Kegiatan/Kegiatan";
-import User from "./pages/User/User";
+import User from "./pages/DataPage/User/User";
+import { Alert, Snackbar } from "@mui/material";
+import { useNotificationStore } from "./stores/useNotifStore";
 
 const App = () => {
+  const { open, message, severity, hideNotification } = useNotificationStore();
+
   return (
     <>
       <Router>
@@ -45,6 +49,12 @@ const App = () => {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
+      {/* Komponen Alert dengan Snackbar */}
+      <Snackbar open={open} autoHideDuration={6000} onClose={hideNotification} anchorOrigin={{ vertical: "top", horizontal: "center" }}>
+        <Alert onClose={hideNotification} severity={severity} variant="filled" sx={{ width: "100%" }}>
+          {message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

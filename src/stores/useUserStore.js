@@ -6,6 +6,9 @@ export const useUserStore = create((set, get) => ({
   token: localStorage.getItem("token") || "",
   userList: [],
   loading: false,
+  totalPages: 1,
+  currentPage: 1,
+  currentLimit: 10,
 
   getUserLists: async () => {
     set({ loading: true });
@@ -22,13 +25,12 @@ export const useUserStore = create((set, get) => ({
         userList: data,
         loading: false,
       });
-      console.log("ini token dari user store sekarang:", token);
     } catch (error) {
-      console.log("error dari user lists store:", error);
       set({
         loading: false,
       });
       get().logout();
+      throw error;
     }
   },
 
@@ -38,9 +40,9 @@ export const useUserStore = create((set, get) => ({
       if (response.status === 200) console.log("berhasil login store", response);
       localStorage.setItem("token", response.data.token);
       set({ token: response.data.token });
+      return true;
     } catch (error) {
-      console.log(error);
-      alert(error.response.data.message);
+      throw error;
     }
   },
 
@@ -49,13 +51,10 @@ export const useUserStore = create((set, get) => ({
       const response = await axios.post("http://localhost:3000/api/auth/register", payload);
       if (response.status === 200) {
         console.log("berhasil register dari store");
-        alert("register berhasil");
         return true;
       }
     } catch (error) {
-      console.log(error);
-      alert(error.response.data.error);
-      return false;
+      throw error;
     }
   },
 
@@ -66,5 +65,19 @@ export const useUserStore = create((set, get) => ({
 
   refreshUser: () => {
     set({ userInfo: getDecodedToken(), isLoggedIn: !!getDecodedToken() });
+  },
+
+  approveUser: async (payload) => {
+    try {
+      set({ loading: true });
+      const token = get().token;
+      const response = await axios.post("http://localhost:3000/api/approve-user", payload, { headers: { Authorization: `Bearer:${token}` } });
+      if (response.status === 200) console.log("berhasil bosku");
+      set({ loading: false });
+      return true;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
   },
 }));
