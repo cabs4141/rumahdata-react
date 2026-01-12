@@ -17,7 +17,6 @@ import { useNotificationStore } from "./stores/useNotifStore";
 
 const App = () => {
   const { open, message, severity, hideNotification } = useNotificationStore();
-
   return (
     <>
       <Router>

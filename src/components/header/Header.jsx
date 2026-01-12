@@ -63,10 +63,10 @@ const Header = ({ onClick, onToggle, isSidebarOpen }) => {
         {/* BAGIAN KANAN: Theme, Notification, User Dropdown */}
         <div className={`${isApplicationMenuOpen ? "flex" : "hidden"} items-center justify-between gap-3 px-5 py-4 border-t border-gray-200 dark:border-gray-800 lg:flex lg:justify-end lg:px-0 lg:py-0 lg:border-t-0 lg:gap-4`}>
           <div className="flex items-center gap-2 2xsm:gap-3">
-            <ThemeToggleButton />
-            <NotificationDropdown />
+            {/* <ThemeToggleButton /> */}
+            {/* <NotificationDropdown /> */}
           </div>
-          <div className="w-px h-8 bg-gray-200 dark:bg-gray-800 hidden lg:block"></div> {/* Separator garis tipis */}
+          <div className="w-px h-8 bg-gray-200 dark:bg-gray-800 hidden lg:block"></div>
           <UserDropdown />
         </div>
       </div>

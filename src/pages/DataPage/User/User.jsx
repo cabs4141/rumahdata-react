@@ -1,34 +1,70 @@
-import { Chip } from "@mui/material";
 import { useUserStore } from "../../../stores/useUserStore";
 import DataTable from "../DataTable";
+import { Stack, Typography } from "@mui/material";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import PendingIcon from "@mui/icons-material/Pending";
+import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 
 const User = () => {
-  const { getUserLists, userList, isLoading, currentLimit, currentPage, totalPages } = useUserStore();
+  const { isFetching, getUserLists, userList, isLoading, currentLimit, currentPage, totalPages } = useUserStore();
+
   const columns = [
-    { header: "NIP", accessor: "nip" },
+    {
+      header: "NO",
+      accessor: "no",
+      render: (row, index) => (
+        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
+          {(currentPage - 1) * currentLimit + index + 1}
+        </Typography>
+      ),
+    },
     { header: "NAMA", accessor: "nama" },
+    { header: "NIP", accessor: "nip" },
     {
       header: "ROLE",
       accessor: "role",
-      render: (row) => <Chip label={row.role} size="small" color={getRoleColor(row.role)} variant="outlined" />,
+      render: (row) => (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <FiberManualRecordIcon
+            sx={{
+              fontSize: 10,
+              color: row.role === "super_admin" ? "error.main" : row.role === "admin" ? "warning.main" : "primary.main",
+            }}
+          />
+          <Typography variant="body2" sx={{ fontWeight: 500 }}>
+            {row.role?.toUpperCase()}
+          </Typography>
+        </Stack>
+      ),
     },
-    { header: "STATUS", accessor: "status" },
-    { header: "AKSI", accessor: "aksi" },
+    {
+      header: "STATUS",
+      accessor: "status",
+      render: (row) => (
+        <Stack direction="row" spacing={1} alignItems="center">
+          {row.status === "approved" ? (
+            <>
+              <CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />
+              <Typography variant="body2" color="success.main" sx={{ fontWeight: "bold" }}>
+                AKTIF
+              </Typography>
+            </>
+          ) : (
+            <>
+              <PendingIcon sx={{ fontSize: 16, color: "primary.main" }} />
+              <Typography variant="body2" color="primary.main" sx={{ fontWeight: "bold" }}>
+                PENDING
+              </Typography>
+            </>
+          )}
+        </Stack>
+      ),
+    },
   ];
-  // Handler untuk warna label Role/Status (Opsional)
-  const getRoleColor = (role) => {
-    switch (role?.toLowerCase()) {
-      case "super_admin":
-        return "error";
-      case "admin":
-        return "warning";
-      default:
-        return "primary";
-    }
-  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] w-[calc(175vh-140px)] border border-gray-300 rounded-lg shadow-sm bg-white dark:bg-gray-900 overflow-hidden">
-      <DataTable columns={columns} isLoading={isLoading} data={userList} onFetch={getUserLists} currentLimit={currentLimit} currentPage={currentPage} totalPages={totalPages} dataTitle={"Data User"} />
+      <DataTable isFetching={isFetching} columns={columns} isLoading={isLoading} data={userList} onFetch={getUserLists} currentLimit={currentLimit} currentPage={currentPage} totalPages={totalPages} dataTitle={"Data User"} />
     </div>
   );
 };

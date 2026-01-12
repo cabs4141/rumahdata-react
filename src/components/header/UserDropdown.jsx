@@ -1,12 +1,15 @@
-import { useEffect, useState } from "react";
-import { Dropdown } from "../ui/Dropdown";
+import * as React from "react";
 import { useNavigate } from "react-router";
 import { useUserStore } from "../../stores/useUserStore";
 import { jwtDecode } from "jwt-decode";
-// Import komponen Modal
-import { Box, Typography, Modal, Button, Stack } from "@mui/material";
+import { Box, Typography, Modal, Button, Stack, Menu, MenuItem, Avatar, Divider, Paper } from "@mui/material";
 
-// Style untuk Modal MUI
+// Icons (Pilih yang bergaya Line/Outline untuk kesan bersih)
+import LogoutIcon from "@mui/icons-material/Logout";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import BadgeIcon from "@mui/icons-material/Badge";
+
 const modalStyle = {
   position: "absolute",
   top: "50%",
@@ -14,105 +17,194 @@ const modalStyle = {
   transform: "translate(-50%, -50%)",
   width: 400,
   bgcolor: "background.paper",
-  borderRadius: "16px", // Agar serasi dengan UI kamu yang rounded
-  boxShadow: 24,
-  p: 4,
+  boxShadow: "0 8px 32px rgba(0,0,0,0.2)",
+  p: 0, // Header akan memiliki warna sendiri
+  borderRadius: "2px",
+  overflow: "hidden",
   outline: "none",
 };
 
 const UserDropdown = () => {
   const navigate = useNavigate();
-  const [isOpen, setIsOpen] = useState(false);
-  const [openModal, setOpenModal] = useState(false); // State untuk Modal
   const { token, logout } = useUserStore();
-  const [userInfo, setUserInfo] = useState(null);
+  const [userInfo, setUserInfo] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [openModal, setOpenModal] = React.useState(false);
 
-  const toggleDropdown = () => setIsOpen(!isOpen);
-  const closeDropdown = () => setIsOpen(false);
+  const openMenu = Boolean(anchorEl);
 
-  // Fungsi untuk membuka modal dan menutup dropdown
-  const handleOpenModal = (e) => {
-    e.preventDefault();
+  const handleOpenMenu = (event) => setAnchorEl(event.currentTarget);
+  const handleCloseMenu = () => setAnchorEl(null);
+
+  const handleOpenModal = () => {
+    handleCloseMenu();
     setOpenModal(true);
-    setIsOpen(false); // Tutup dropdown saat modal muncul
   };
 
-  const handleCloseModal = () => setOpenModal(false);
-
-  // Fungsi logout yang sesungguhnya (dipanggil di dalam modal)
   const confirmLogout = () => {
     logout();
     navigate("/signin");
   };
 
-  useEffect(() => {
-    if (token && token !== "" && token !== "null" && token !== "undefined") {
+  React.useEffect(() => {
+    if (token) {
       try {
         const decoded = jwtDecode(token);
-        const currentTime = Date.now() / 1000;
-        if (decoded.exp && decoded.exp < currentTime) throw new Error("Expired");
         setUserInfo(decoded);
       } catch (error) {
         logout();
         navigate("/signin");
       }
-    } else {
-      navigate("/signin");
     }
-  }, [token, navigate, logout]);
+  }, [token, logout, navigate]);
 
   return (
-    <div className="hidden lg:block relative">
-      {/* Tombol Trigger Dropdown */}
-      <button onClick={toggleDropdown} className="flex items-center text-gray-700 dropdown-toggle dark:text-gray-400">
-        <span className="mr-3 overflow-hidden rounded-full">
-          <img src="/src/icons/user-line.svg" alt="User" width={28} height={28} />
-        </span>
-        <span className="block mr-1 font-medium text-theme-sm">{userInfo?.nama || "user"}</span>
-        <svg className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} width="18" height="20" viewBox="0 0 18 20" fill="none">
-          <path d="M4.3125 8.65625L9 13.3437L13.6875 8.65625" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
-
-      {/* Konten Dropdown */}
-      <Dropdown isOpen={isOpen} onClose={closeDropdown} className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark">
-        <div className="px-3 py-2">
-          <span className="mb-2 block font-medium text-gray-700 text-theme-md dark:text-gray-400">Nama: {userInfo?.nama || "user"}</span>
-          <span className="mt-0.5 block text-theme-sm text-gray-500 dark:text-gray-400">NIP: {userInfo?.nip || "nip"}</span>
-          <span className="mt-0.5 block text-theme-sm text-gray-500 dark:text-gray-400">Role: {userInfo?.role || "role"}</span>
-        </div>
-
-        <button
-          onClick={handleOpenModal} // Panggil modal konfirmasi
-          className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-red-500 rounded-lg group text-theme-sm hover:bg-red-50 dark:hover:bg-red-900/10"
+    <Box sx={{ display: { xs: "none", lg: "block" } }}>
+      {/* Tombol Profile Navbar - Dibuat lebih solid */}
+      <Box
+        onClick={handleOpenMenu}
+        sx={{
+          bgcolor: "rgba(0,0,0,0.06)",
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          cursor: "pointer",
+          py: 0.5,
+          px: 1,
+          borderRadius: "4px",
+          transition: "0.2s",
+          "&:hover": { bgcolor: "rgba(0,0,0,0.10)" },
+        }}
+      >
+        <Avatar
+          variant="rounded" // Bentuk kotak dengan sudut melengkung lebih formal daripada lingkaran sempurna
+          sx={{
+            width: 32,
+            height: 32,
+            bgcolor: "#1976d2", // Biru Dongker Formal
+            fontSize: "1rem",
+            fontWeight: "bold",
+          }}
         >
-          {/* Ikon Logout */}
-          <svg className="fill-current" width="24" height="24" viewBox="0 0 24 24">
-            <path d="M15.1007 19.247C14.6865 19.247 14.3507 18.9112 14.3507 18.497V14.245H12.8507V18.497C12.8507 19.7396 13.8581 20.747 15.1007 20.747H18.5007C19.7434 20.747 20.7507 19.7396 20.7507 18.497L20.7507 5.49609C20.7507 4.25345 19.7433 3.24609 18.5007 3.24609H15.1007C13.8581 3.24609 12.8507 4.25345 12.8507 5.49609V9.74501L14.3507 9.74501V5.49609C14.3507 5.08188 14.6865 4.74609 15.1007 4.74609L18.5007 4.74609C18.9149 4.74609 19.2507 5.08188 19.2507 5.49609L19.2507 18.497C19.2507 18.9112 18.9149 19.247 18.5007 19.247H15.1007ZM3.25073 11.9984C3.25073 12.2144 3.34204 12.4091 3.48817 12.546L8.09483 17.1556C8.38763 17.4485 8.86251 17.4487 9.15549 17.1559C9.44848 16.8631 9.44863 16.3882 9.15583 16.0952L5.81116 12.7484L16.0007 12.7484C16.4149 12.7484 16.7507 12.4127 16.7507 11.9984C16.7507 11.5842 16.4149 11.2484 16.0007 11.2484L5.81528 11.2484L9.15585 7.90554C9.44864 7.61255 9.44847 7.13767 9.15547 6.84488C8.86248 6.55209 8.3876 6.55226 8.09481 6.84525L3.52309 11.4202C3.35673 11.5577 3.25073 11.7657 3.25073 11.9984Z" />
-          </svg>
-          keluar
-        </button>
-      </Dropdown>
-
-      {/* --- MODAL KONFIRMASI --- */}
-      <Modal open={openModal} onClose={handleCloseModal}>
-        <Box sx={modalStyle}>
-          <Typography variant="h6" component="h2" fontWeight="bold">
-            Konfirmasi Keluar
+          {userInfo?.nama?.charAt(0).toUpperCase()}
+        </Avatar>
+        <Box sx={{ lineHeight: 1 }}>
+          <Typography variant="body2" sx={{ fontWeight: 700, color: "#333" }}>
+            {userInfo?.nama?.toUpperCase() || "USER"}
           </Typography>
-          <Typography sx={{ mt: 2, color: "text.secondary" }}>Apakah Anda yakin ingin keluar dari sistem? </Typography>
+          <Typography variant="caption" sx={{ color: "#666", textTransform: "uppercase", fontSize: "0.65rem", letterSpacing: 1 }}>
+            {userInfo?.role || "STAFF"}
+          </Typography>
+        </Box>
+        <ArrowDropDownIcon sx={{ color: "#999" }} />
+      </Box>
 
-          <Stack direction="row" spacing={2} justifyContent="flex-end" sx={{ mt: 4 }}>
-            <Button variant="outlined" color="inherit" onClick={handleCloseModal} sx={{ borderRadius: "8px", textTransform: "none" }}>
-              Batal
-            </Button>
-            <Button variant="contained" color="error" onClick={confirmLogout} sx={{ borderRadius: "8px", textTransform: "none" }}>
-              Keluar
-            </Button>
-          </Stack>
+      {/* Menu Dropdown - Bergaya Sidebar Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={openMenu}
+        onClose={handleCloseMenu}
+        disableScrollLock
+        transformOrigin={{ horizontal: "right", vertical: "top" }}
+        anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
+        PaperProps={{
+          elevation: 4,
+          sx: {
+            mt: 1.5,
+            width: 280,
+            borderRadius: "4px",
+            border: "1px solid #e0e0e0",
+          },
+        }}
+      >
+        {/* Header Identitas di dalam Dropdown */}
+        <Box sx={{ px: 2, py: 2, bgcolor: "#f8f9fa" }}>
+          <Typography variant="caption" sx={{ fontWeight: 800, color: "#000000", textTransform: "uppercase" }}>
+            Profil
+          </Typography>
+        </Box>
+
+        <Divider />
+
+        <Box sx={{ py: 1 }}>
+          <MenuItem sx={{ py: 1, cursor: "default", "&:hover": { bgcolor: "transparent" } }}>
+            <BadgeIcon sx={{ mr: 2, color: "#757575", fontSize: 20 }} />
+            <Box>
+              <Typography variant="caption" display="block" color="text.secondary">
+                NIP
+              </Typography>
+              <Typography variant="body2" fontWeight={600}>
+                {userInfo?.nip || "-"}
+              </Typography>
+            </Box>
+          </MenuItem>
+
+          <MenuItem sx={{ py: 1, cursor: "default", "&:hover": { bgcolor: "transparent" } }}>
+            <VerifiedUserIcon sx={{ mr: 2, color: "#757575", fontSize: 20 }} />
+            <Box>
+              <Typography variant="caption" display="block" color="text.secondary">
+                Hak Akses
+              </Typography>
+              <Typography variant="body2" fontWeight={600} sx={{ textTransform: "capitalize" }}>
+                {userInfo?.role || "-"}
+              </Typography>
+            </Box>
+          </MenuItem>
+        </Box>
+
+        <Divider />
+
+        <MenuItem
+          onClick={handleOpenModal}
+          sx={{
+            py: 1.5,
+            color: "#d32f2f",
+            "&:hover": { bgcolor: "#fff5f5" },
+          }}
+        >
+          <LogoutIcon sx={{ mr: 2, fontSize: 20 }} />
+          <Typography variant="body2" fontWeight={700}>
+            KELUAR
+          </Typography>
+        </MenuItem>
+      </Menu>
+
+      {/* --- MODAL KONFIRMASI (Government Style) --- */}
+      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+        <Box sx={modalStyle}>
+          {/* Header Modal Berwarna */}
+          <Box sx={{ bgcolor: "primary.main", p: 2, color: "white" }}>
+            <Typography variant="subtitle1" fontWeight={700}>
+              Konfirmasi
+            </Typography>
+          </Box>
+
+          <Box sx={{ p: 3 }}>
+            <Typography variant="body2" sx={{ color: "#444", mb: 4, lineHeight: 1.6 }}>
+              Apakah Anda yakin ingin mengakhiri sesi dan keluar dari portal BGTK?
+            </Typography>
+
+            <Stack direction="row" spacing={2} justifyContent="flex-end">
+              <Button onClick={() => setOpenModal(false)} sx={{ color: "#666", textTransform: "none", fontWeight: 600 }}>
+                Batal
+              </Button>
+              <Button
+                variant="contained"
+                onClick={confirmLogout}
+                sx={{
+                  bgcolor: "#d32f2f",
+                  textTransform: "none",
+                  fontWeight: 600,
+                  "&:hover": { bgcolor: "#b71c1c" },
+                }}
+              >
+                Keluar
+              </Button>
+            </Stack>
+          </Box>
         </Box>
       </Modal>
-    </div>
+    </Box>
   );
 };
 

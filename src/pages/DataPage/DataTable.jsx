@@ -7,24 +7,55 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
-import { useEffect, useState } from "react";
 import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useNotificationStore } from "../../stores/useNotifStore";
 import UploadFile from "./UploadFile";
 import CircularProgress from "@mui/material/CircularProgress";
 import Backdrop from "@mui/material/Backdrop";
-import ModalConfirm from "./Modal"; // Ubah nama import agar lebih jelas
+import ModalConfirm from "./Modal";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
-export default function DataTable({ columns, dataTitle, data, totalPages, isLoading, currentLimit, currentPage, onFetch, onDelete, onUpload, onSearch }) {
+import Tooltip from "@mui/material/Tooltip";
+import { useNotificationStore } from "../../stores/useNotifStore";
+import { useEffect, useState } from "react";
+import { useUserStore } from "../../stores/useUserStore";
+import { jwtDecode } from "jwt-decode";
+import ModalDetailUser from "./ModalDetailUser";
+import Skeleton from "@mui/material/Skeleton";
+import { useSekolahStore } from "../../stores/useSekolahStore";
+import ModalDetailSekolah from "./ModalDetailSekolah";
+
+const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading, currentLimit, currentPage, onFetch, onDelete, onUpload }) => {
   const { showNotification } = useNotificationStore();
+  const { token } = useUserStore();
+  const { getUserDetail, clearSelectedUser } = useUserStore();
+  const { getSekolahDetail } = useSekolahStore();
+
   const [openModal, setOpenModal] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [open, setOpen] = useState(false);
+  const [openSekolah, setOpenSekolah] = useState(false);
+
+  const totalHalaman = totalPages ? totalPages?.toLocaleString("id-ID") : "0";
+  const isSekolah = dataTitle?.toLowerCase().includes("sekolah");
+  const isDataUser = dataTitle?.toLowerCase().includes("user");
+  const decoded = jwtDecode(token);
+  const userRole = decoded?.role;
+  const isUserRole = userRole == "user";
+
+  // --- REVISI: LOGIKA DEBOUNCE AGAR TYPING TIDAK LAMBAT ---
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      // Hanya panggil onFetch jika ada perubahan searchTerm yang signifikan
+      onFetch(searchTerm, 1, currentLimit);
+    }, 500); // Delay 500ms
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchTerm]);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -40,7 +71,7 @@ export default function DataTable({ columns, dataTitle, data, totalPages, isLoad
 
   const handleLimit = (e) => {
     const newLimit = parseInt(e.target.value);
-    onFetch(searchTerm, currentPage, newLimit);
+    onFetch(searchTerm, 1, newLimit);
   };
 
   const handleDelete = async () => {
@@ -57,30 +88,61 @@ export default function DataTable({ columns, dataTitle, data, totalPages, isLoad
     setSearchTerm(e.target.value);
   };
 
-  // Handler saat tekan Enter atau Klik Tombol Cari
+  // Tetap sediakan handleSearch jika user menekan Enter di form
   const handleSearch = (e) => {
     if (e) e.preventDefault();
     onFetch(searchTerm, 1, currentLimit);
   };
 
-  useEffect(() => {
-    onFetch(searchTerm, currentPage, currentLimit);
-  }, []);
+  const handleOpenModal = async (row) => {
+    if (isDataUser) {
+      try {
+        await getUserDetail(row.id);
+        setOpen(true);
+      } catch (err) {
+        showNotification("Gagal mengambil detail user", "error");
+        console.log(err);
+      }
+    } else {
+      setOpen(true);
+    }
+  };
 
-  const totalHalaman = totalPages.toLocaleString("id-ID");
+  const handleCloseModal = () => {
+    setOpen(false);
+    clearSelectedUser();
+  };
+
+  const handleSekolahDetail = async (row) => {
+    try {
+      await getSekolahDetail(row.sekolah_id);
+      setOpenSekolah(true);
+    } catch (error) {
+      console.log("error func", error);
+    }
+  };
+
+  const handleCloseModalSekolah = () => {
+    setOpenSekolah(false);
+  };
+
+  // Hapus onFetch dari useEffect init agar tidak double call dengan debounce pertama
+  useEffect(() => {
+    // onFetch(searchTerm, currentPage, currentLimit);
+  }, []);
 
   if (isLoading) {
     return (
       <Backdrop
         sx={{
           color: "#fff",
-          zIndex: (theme) => theme.zIndex.drawer + 1, // Memastikan di atas elemen lain
+          zIndex: (theme) => theme.zIndex.drawer + 1,
           display: "flex",
           flexDirection: "column",
           gap: 2,
-          backgroundColor: "rgba(0, 0, 0, 0.7)", // Mengatur kegelapan latar (0.7 = 70%)
+          backgroundColor: "rgba(0, 0, 0, 0.7)",
         }}
-        open={isLoading} // Muncul hanya saat loading true
+        open={isLoading}
       >
         <CircularProgress color="inherit" size={60} />
         <Typography variant="h6" component="div">
@@ -98,17 +160,18 @@ export default function DataTable({ columns, dataTitle, data, totalPages, isLoad
         height: "100%",
         display: "flex",
         flexDirection: "column",
-        overflow: "hidden", // Mengunci Box agar tidak ikut melebar
+        overflow: "hidden",
       }}
     >
       <div className="flex flex-row justify-between mb-4 mx-2 ">
         <Typography variant="h6" sx={{ flexShrink: 0 }}>
           {dataTitle}
         </Typography>
-        <form onSubmit={handleSearch} className="flex gap-2">
+
+        {isDataUser ? (
           <TextField
             size="small"
-            placeholder="Cari data..."
+            placeholder="Cari"
             value={searchTerm}
             onChange={handleInputSearch}
             sx={{ width: 250 }}
@@ -120,14 +183,40 @@ export default function DataTable({ columns, dataTitle, data, totalPages, isLoad
               ),
             }}
           />
+        ) : (
+          <form onSubmit={handleSearch} className="flex gap-2">
+            <TextField
+              size="small"
+              placeholder="Cari data..."
+              value={searchTerm}
+              onChange={handleInputSearch}
+              sx={{ width: 250 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" />
+                  </InputAdornment>
+                ),
+              }}
+            />
 
-          <UploadFile open={openModal} setOpen={setOpenModal} onUpload={onUpload} />
-          <Button onClick={() => setOpenDelete(true)} color="error" variant="contained" startIcon={<DeleteIcon fontSize="small" />} size="small" disabled={!data || data.length === 0}>
-            Hapus Data
-          </Button>
-        </form>
+            {isUserRole !== true ? (
+              <>
+                <UploadFile open={openModal} setOpen={setOpenModal} onUpload={onUpload} />
+                <Button onClick={() => setOpenDelete(true)} color="error" variant="contained" startIcon={<DeleteIcon fontSize="small" />} size="small" disabled={!data || data.length === 0}>
+                  Hapus Data
+                </Button>
+              </>
+            ) : (
+              <div />
+            )}
+          </form>
+        )}
       </div>
+
       <ModalConfirm open={openDelete} onClose={() => setOpenDelete(false)} onConfirm={handleDelete} />
+      <ModalDetailUser isOpen={open} handleClose={handleCloseModal} onRefresh={() => onFetch(searchTerm, currentPage, currentLimit)} />
+      <ModalDetailSekolah open={openSekolah} handleClose={handleCloseModalSekolah} />
 
       <TableContainer component={Paper} sx={{ flexGrow: 1, overflow: "auto" }}>
         <Table stickyHeader size="small">
@@ -135,27 +224,44 @@ export default function DataTable({ columns, dataTitle, data, totalPages, isLoad
             <TableRow>
               {columns.map((col, index) => (
                 <TableCell key={index} sx={{ bgcolor: "#f5f5f5", fontWeight: "bold" }}>
-                  {col.header} {/* Menampilkan Judul */}
+                  {col.header}
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {data && data.length > 0 ? (
-              data.map((row, rowIndex) => (
-                <TableRow sx={{ whiteSpace: "nowrap" }} key={rowIndex} hover>
-                  {columns.map((col, colIndex) => (
+            {isFetching ? (
+              [...Array(currentLimit || 5)].map((_, rowIndex) => (
+                <TableRow key={rowIndex}>
+                  {columns.map((_, colIndex) => (
                     <TableCell key={colIndex}>
-                      {/* Render custom jika ada, jika tidak tampilkan key berdasarkan accessor */}
-                      {col.render ? col.render(row) : row[col.accessor]}
+                      <Skeleton variant="text" animation="wave" height={30} />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : data && data.length > 0 ? (
+              data.map((row, rowIndex) => (
+                <TableRow key={rowIndex} hover onClick={() => isDataUser && handleOpenModal(row)} sx={{ cursor: isDataUser ? "pointer" : "default", whiteSpace: "nowrap" }}>
+                  {columns.map((col, colIndex) => (
+                    <TableCell onClick={() => isSekolah && handleSekolahDetail(row)} className={isSekolah ? "cursor-pointer" : ""} key={colIndex}>
+                      {isSekolah ? (
+                        <Tooltip title="Klik untuk lihat detail sekolah" arrow>
+                          {col.render ? col.render(row, rowIndex) : row[col.accessor]}
+                        </Tooltip>
+                      ) : col.render ? (
+                        col.render(row, rowIndex)
+                      ) : (
+                        row[col.accessor]
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} align="center">
-                  Data tidak ditemukan
+                <TableCell colSpan={columns.length} align="center" sx={{ py: 10 }}>
+                  <Typography color="textSecondary">Data tidak ditemukan</Typography>
                 </TableCell>
               </TableRow>
             )}
@@ -163,7 +269,6 @@ export default function DataTable({ columns, dataTitle, data, totalPages, isLoad
         </Table>
       </TableContainer>
 
-      {/* Pagination Container */}
       <Box sx={{ p: 2, flexShrink: 0, borderTop: "1px solid #eee" }}>
         <div className="flex flex-row justify-between items-center">
           <div className="flex items-center gap-2 ">
@@ -182,16 +287,15 @@ export default function DataTable({ columns, dataTitle, data, totalPages, isLoad
             </div>
             <div className="flex gap-2">
               <button
-                className={`flex items-center justify-center p-1 rounded border transition-colors ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-400 "}`}
+                className={`flex items-center justify-center p-1 rounded border transition-colors ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600 "}`}
                 onClick={prevPage}
                 disabled={currentPage === 1}
               >
                 <NavigateBeforeIcon />
               </button>
 
-              {/* Tombol Next */}
               <button
-                className={`flex items-center justify-center p-1 rounded border transition-colors ${currentPage >= totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-400 "}`}
+                className={`flex items-center justify-center p-1 rounded border transition-colors ${currentPage >= totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600 "}`}
                 onClick={nextPage}
                 disabled={currentPage >= totalPages}
               >
@@ -203,4 +307,6 @@ export default function DataTable({ columns, dataTitle, data, totalPages, isLoad
       </Box>
     </Box>
   );
-}
+};
+
+export default DataTable;

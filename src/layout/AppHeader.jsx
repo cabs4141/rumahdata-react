@@ -80,7 +80,7 @@ const AppHeader = () => {
 
           {/* Theme & User Dropdown */}
           <div className="flex items-center gap-2 lg:gap-4">
-            <div className="hidden lg:block w-px h-6 bg-gray-200 dark:bg-gray-800"></div>
+            {/* <div className="hidden lg:block w-px h-6 bg-gray-200 dark:bg-gray-800"></div> */}
             <UserDropdown />
           </div>
 

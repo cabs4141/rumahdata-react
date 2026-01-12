@@ -1,14 +1,24 @@
 import { usePtkStore } from "../../../stores/usePtkStore";
 import { useNotificationStore } from "../../../stores/useNotifStore";
 import DataTable from "../DataTable";
+import { Typography } from "@mui/material";
 
 const Ptk = () => {
-  const { fetchPtk, ptkData, isLoading, totalPages, currentPage, currentLimit, deletePtk, uploadPtk, searchPtk } = usePtkStore();
+  const { isFetching, ptkData, isLoading, totalPages, currentPage, currentLimit, deletePtk, uploadPtk, searchPtk } = usePtkStore();
   const { showNotification } = useNotificationStore();
   const columns = [
+    {
+      header: "NO",
+      accessor: "no",
+      render: (row, index) => (
+        // Gunakan variant body2 agar ukuran font pas dengan data tabel lainnya
+        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
+          {(currentPage - 1) * currentLimit + index + 1}
+        </Typography>
+      ),
+    },
     { header: "ID PTK", accessor: "ptk_id" },
     { header: "NAMA", accessor: "nama" },
-
     { header: "ID SEKOLAH", accessor: "sekolah_id" },
     { header: "NIP", accessor: "nip" },
     { header: "JENIS KELAMIN", accessor: "jenis_kelamin" },
@@ -34,9 +44,20 @@ const Ptk = () => {
     }
   };
   return (
-    // Gunakan w-full dan max-w-full untuk mengunci lebar
     <div className="w-full max-w-full flex flex-col h-[calc(100vh-140px)] border border-gray-300 rounded-lg shadow-sm bg-white dark:bg-gray-900 overflow-hidden">
-      <DataTable columns={columns} dataTitle={"Data PTK"} data={ptkData} totalPages={totalPages} isLoading={isLoading} currentLimit={currentLimit} currentPage={currentPage} onFetch={searchPtk} onDelete={deletePtk} onUpload={handleUpload} />
+      <DataTable
+        isFetching={isFetching}
+        columns={columns}
+        dataTitle={"Data PTK"}
+        data={ptkData}
+        totalPages={totalPages}
+        isLoading={isLoading}
+        currentLimit={currentLimit}
+        currentPage={currentPage}
+        onFetch={searchPtk}
+        onDelete={deletePtk}
+        onUpload={handleUpload}
+      />
     </div>
   );
 };
