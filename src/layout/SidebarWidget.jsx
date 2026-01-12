@@ -1,23 +1,81 @@
-export default function SidebarWidget() {
+import React from "react";
+import { Box, Typography, Button, Paper, Divider, Stack } from "@mui/material";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+
+const SidebarWidget = () => {
   return (
-    <div
-      className={`
-        mx-auto mb-10 w-full max-w-60 rounded-2xl bg-gray-50 px-4 py-5 text-center dark:bg-white/[0.03]`}
+    <Paper
+      variant="outlined"
+      sx={{
+        mt: 6,
+        mx: 2,
+        mb: 5,
+        p: 2.5,
+        borderRadius: 1,
+        bgcolor: "background.paper",
+        borderColor: "divider",
+        textAlign: "center",
+        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.03)",
+      }}
     >
-      <h3 className="mb-2 font-semibold text-gray-900 dark:text-white">
-        #1 Tailwind CSS Dashboard
-      </h3>
-      <p className="mb-4 text-gray-500 text-theme-sm dark:text-gray-400">
-        Leading Tailwind CSS Admin Template with 400+ UI Component and Pages.
-      </p>
-      <a
-        href="https://tailadmin.com/pricing"
-        target="_blank"
-        rel="nofollow"
-        className="flex items-center justify-center p-3 font-medium text-white rounded-lg bg-brand-500 text-theme-sm hover:bg-brand-600"
-      >
-        Purchase Plan
-      </a>
-    </div>
+      <Stack spacing={1.5} alignItems="center">
+        {/* Icon Lambang Formalitas */}
+        <InfoOutlinedIcon color="primary" sx={{ fontSize: 28 }} />
+
+        <Box>
+          <Typography
+            variant="subtitle2"
+            sx={{
+              fontWeight: 700,
+              color: "text.primary",
+              letterSpacing: 0.5,
+              textTransform: "uppercase",
+              fontSize: "0.75rem",
+            }}
+          >
+            Rumah Data BGTK NTB
+          </Typography>
+
+          <Divider sx={{ my: 1, width: "40px", mx: "auto", borderBottomWidth: 2, bgcolor: "primary.main" }} />
+
+          <Typography
+            variant="caption"
+            sx={{
+              color: "text.secondary",
+              display: "block",
+              lineHeight: 1.5,
+              px: 1,
+            }}
+          >
+            Pusat pengembangan kompetensi dan pemberdayaan tenaga kependidikan.
+          </Typography>
+        </Box>
+
+        <Button
+          fullWidth
+          variant="contained"
+          size="small"
+          endIcon={<OpenInNewIcon sx={{ fontSize: "1rem !important" }} />}
+          href="https://bgtkntb.kemendikdasmen.go.id/" // Contoh link instansi
+          target="_blank"
+          sx={{
+            py: 1,
+            textTransform: "none",
+            borderRadius: 1,
+            fontWeight: 600,
+            boxShadow: "none",
+            "&:hover": {
+              boxShadow: "none",
+              bgcolor: "primary.dark",
+            },
+          }}
+        >
+          Portal Resmi
+        </Button>
+      </Stack>
+    </Paper>
   );
-}
+};
+
+export default SidebarWidget;

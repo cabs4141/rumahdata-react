@@ -1,5 +1,5 @@
 const Kegiatan = () => {
-  return <div>ini halaman kegiatan</div>;
+  return <div>kegiatan page</div>;
 };
 
 export default Kegiatan;

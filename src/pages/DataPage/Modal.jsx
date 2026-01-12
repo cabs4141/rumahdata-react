@@ -31,7 +31,7 @@ const Modal = ({ open, onClose, onConfirm }) => {
           color="error"
           autoFocus
         >
-          Ya, Hapus Semua
+          Hapus
         </Button>
       </DialogActions>
     </Dialog>

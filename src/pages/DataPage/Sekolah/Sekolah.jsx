@@ -1,11 +1,22 @@
 import DataTable from "../DataTable.jsx";
 import { useSekolahStore } from "../../../stores/useSekolahStore.js";
 import { useNotificationStore } from "../../../stores/useNotifStore";
+import { Typography } from "@mui/material";
 
 const Sekolah = () => {
-  const { fetchSekolah, sekolahData, isLoading, totalPages, currentPage, currentLimit, deleteSekolah, uploadSekolah, searchSekolah } = useSekolahStore();
+  const { sekolahData, isLoading, totalPages, currentPage, currentLimit, deleteSekolah, uploadSekolah, searchSekolah, isFetching } = useSekolahStore();
   const { showNotification } = useNotificationStore();
   const columns = [
+    {
+      header: "NO",
+      accessor: "no",
+      render: (row, index) => (
+        // Gunakan variant body2 agar ukuran font pas dengan data tabel lainnya
+        <Typography variant="body2" sx={{ fontWeight: 600, color: "text.secondary" }}>
+          {(currentPage - 1) * currentLimit + index + 1}
+        </Typography>
+      ),
+    },
     { header: "ID SEKOLAH", accessor: "sekolah_id" },
     { header: "NAMA SEKOLAH", accessor: "nama" },
     { header: "ID NPSN", accessor: "npsn" },
@@ -45,6 +56,7 @@ const Sekolah = () => {
         totalPages={totalPages}
         onDelete={deleteSekolah}
         onUpload={handleUpload}
+        isFetching={isFetching}
       />
     </div>
   );
