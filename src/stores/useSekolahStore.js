@@ -4,17 +4,18 @@ import { useUserStore } from "./useUserStore";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const useSekolahStore = create((set, get) => ({
-  sekolahData: [], // Data PTK yang akan disimpan
-  isLoading: false, // Status untuk menunjukkan pemuatan sedang berjalan
-  isFetching: false, // Untuk Fetch/Search (Skeleton)
-  error: null, // Menyimpan pesan error jika gagal
+  sekolahData: [],
+  isLoading: false,
+  isFetching: false,
+  error: null,
   totalPages: 0,
   currentPage: 1,
   currentLimit: 10,
   sekolahDetail: [],
+  currentQuery: "",
 
   fetchSekolah: async (page, limit) => {
-    set({ isFetching: true, error: null, currentPage: page });
+    set({ isFetching: true, error: null, currentPage: page, currentQuery: "" });
     const token = localStorage.getItem("token");
     try {
       const response = await axios.get(`${apiUrl}/sekolah?page=${page}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
@@ -26,7 +27,7 @@ const useSekolahStore = create((set, get) => ({
       const data = await response.data;
 
       set({
-        sekolahData: data.data,
+        sekolahData: data,
         isFetching: false, // Matikan Skeleton        totalPages: data.totalPages,
         currentPage: page,
         currentLimit: limit,
@@ -44,7 +45,7 @@ const useSekolahStore = create((set, get) => ({
 
   deleteSekolah: async () => {
     const token = localStorage.getItem("token");
-    const { sekolahData } = get();
+    const { sekolahData, currentQuery, currentPage, currentLimit, searchSekolah, fetchSekolah } = get();
     set({ isLoading: true });
 
     if (!sekolahData || sekolahData.length === 0) {
@@ -55,6 +56,12 @@ const useSekolahStore = create((set, get) => ({
       const response = await axios.delete(`${apiUrl}/sekolah`, { headers: { Authorization: `Bearer ${token}` } });
       if (response.status === 200) {
         set({ isLoading: false, sekolahData: [], currentPage: 1, totalPages: 0 });
+        if (currentQuery) {
+          await searchSekolah(currentQuery, currentPage, currentLimit);
+        } else {
+          await fetchSekolah(currentPage, currentLimit);
+        }
+        return true;
       }
     } catch (error) {
       set({ isLoading: false });
@@ -63,23 +70,31 @@ const useSekolahStore = create((set, get) => ({
   },
 
   uploadSekolah: async (payload) => {
+    const { currentQuery, currentLimit, searchSekolah, fetchSekolah } = get();
+
     const token = localStorage.getItem("token");
     set({ isLoading: true });
     try {
       const response = await axios.post(`${apiUrl}/upload/sekolah`, payload, { headers: { Authorization: `Bearer ${token}` } });
-      if (response.status === 200) set({ isLoading: false });
-      return true;
+      if (currentQuery) {
+        await searchSekolah(currentQuery, 1, currentLimit);
+      } else {
+        await fetchSekolah(1, currentLimit);
+      }
+      set({ isLoading: false });
+      return response.status === 200;
     } catch (error) {
       set({ isLoading: false });
       throw error;
     }
   },
 
-  searchSekolah: async (query = "", page = 1, limit = 10) => {
+  searchSekolah: async (query, page = 1, limit = 10) => {
     const token = localStorage.getItem("token");
-    set({ isFetching: true });
+    const effectiveQuery = query !== undefined ? query : get().currentQuery;
     try {
-      const response = await axios.get(`${apiUrl}/sekolah/search?query=${query}&page=${page}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}` } });
+      set({ isFetching: true, currentQuery: effectiveQuery });
+      const response = await axios.get(`${apiUrl}/sekolah/search?query=${effectiveQuery}&page=${page}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}` } });
 
       if (response.status === 200) {
         set({

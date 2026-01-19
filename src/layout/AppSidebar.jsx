@@ -181,7 +181,7 @@ const AppSidebar = () => {
 
       <div className="flex-1 px-4 overflow-y-auto no-scrollbar">
         <div className="mb-6">
-          <h2 className={`px-4 mb-4 text-[11px] font-bold uppercase tracking-wider text-gray-300 ${!isExpanded ? "text-center" : ""}`}>{isExpanded || isMobileOpen ? "Main Menu" : <HorizontaLDots className="w-5 h-5 mx-auto" />}</h2>
+          <h2 className={`px-4 mb-4 text-[11px] font-bold uppercase tracking-wider text-gray-400 ${!isExpanded ? "text-center" : ""}`}>{isExpanded || isMobileOpen ? "Main Menu" : <HorizontaLDots className="w-5 h-5 mx-auto" />}</h2>
           {renderMenuItems(filteredNavItems, "main")}
         </div>
       </div>

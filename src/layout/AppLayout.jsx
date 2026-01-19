@@ -10,17 +10,23 @@ const LayoutContent = () => {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
   // Tentukan lebar margin/lebar sidebar agar bisa dipakai di Header juga
-  const sidebarWidth = isExpanded || isHovered ? "lg:pl-[290px]" : "lg:pl-[90px]";
+  const sidebarWidth = isExpanded || isHovered ? "lg:ml-[290px]" : "lg:ml-[90px]";
   return (
     <div className="flex">
-      {/* Sidebar tetap di luar */}
       <AppSidebar />
       <Backdrop />
 
-      <div className={`flex flex-col  transition-all duration-300 ease-in-out min-w-0 ${sidebarWidth} ${isMobileOpen ? "ml-0" : ""}`}>
+      <div
+        className={`
+      flex flex-col flex-1 min-w-0
+      transition-all duration-300 ease-in-out
+      ${sidebarWidth}
+      ${isMobileOpen ? "ml-0" : ""}
+    `}
+      >
         <AppHeader />
-        <main className="p-4 mx-auto w-full max-w-full md:p-6 mt-[72px] lg:mt-[70px] overflow-hidden">
-          {/* overflow-hidden di sini memastikan tidak ada bocor ke samping */}
+
+        <main className="p-4 w-full md:p-6 mt-[72px] lg:mt-[70px] overflow-auto">
           <Outlet />
         </main>
       </div>

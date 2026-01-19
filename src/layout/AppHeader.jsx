@@ -38,7 +38,7 @@ const AppHeader = () => {
   return (
     <header
       className={`fixed top-0 right-0 z-[99] bg-white border-b border-gray-200 dark:border-gray-800 dark:bg-gray-900 transition-all duration-300
-    ${isExpanded || isHovered ? "lg:w-[calc(100%-290px)]" : "lg:w-[calc(100%-90px)]"} 
+    ${isExpanded || isHovered ? "lg:w-[calc(100%-280px)]" : "lg:w-[calc(100%-90px)]"} 
     w-full`}
     >
       <div className="flex items-center justify-between px-4 py-3 lg:px-6">

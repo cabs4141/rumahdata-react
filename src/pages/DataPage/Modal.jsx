@@ -7,16 +7,14 @@ import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 
-const Modal = ({ open, onClose, onConfirm }) => {
+const ModalConfirm = ({ open, onClose, onConfirm, title, titleHead }) => {
   return (
     <Dialog open={open} onClose={onClose} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
       <DialogTitle id="alert-dialog-title" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <DeleteForeverIcon color="error" /> {"Konfirmasi Hapus Seluruh Data"}
+        <DeleteForeverIcon color="error" /> {titleHead}
       </DialogTitle>
       <DialogContent>
-        <DialogContentText id="alert-dialog-description">
-          Apakah Anda yakin ingin menghapus <strong>seluruh data</strong>? Tindakan ini tidak dapat dibatalkan dan semua data yang ada di tabel ini akan hilang secara permanen.
-        </DialogContentText>
+        <DialogContentText id="alert-dialog-description">{title}</DialogContentText>
       </DialogContent>
       <DialogActions sx={{ pb: 2, px: 3 }}>
         <Button onClick={onClose} variant="outlined" color="inherit">
@@ -25,7 +23,7 @@ const Modal = ({ open, onClose, onConfirm }) => {
         <Button
           onClick={() => {
             onConfirm(); // Jalankan fungsi hapus
-            onClose(); // Tutup modal
+            onClose(); // Tutup ModalConfirm
           }}
           variant="contained"
           color="error"
@@ -38,4 +36,4 @@ const Modal = ({ open, onClose, onConfirm }) => {
   );
 };
 
-export default Modal;
+export default ModalConfirm;
