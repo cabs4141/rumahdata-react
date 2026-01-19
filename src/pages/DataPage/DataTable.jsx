@@ -1,3 +1,4 @@
+import React, { useEffect, useState, useMemo, useCallback, memo } from "react";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -11,32 +12,32 @@ import NavigateBeforeIcon from "@mui/icons-material/NavigateBefore";
 import NavigateNextIcon from "@mui/icons-material/NavigateNext";
 import Button from "@mui/material/Button";
 import DeleteIcon from "@mui/icons-material/Delete";
-import UploadFile from "./UploadFile";
 import CircularProgress from "@mui/material/CircularProgress";
 import Backdrop from "@mui/material/Backdrop";
-import ModalConfirm from "./Modal";
 import TextField from "@mui/material/TextField";
 import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import Tooltip from "@mui/material/Tooltip";
-import { useNotificationStore } from "../../stores/useNotifStore";
-import { useEffect, useState } from "react";
-import { useUserStore } from "../../stores/useUserStore";
-import { jwtDecode } from "jwt-decode";
-import ModalDetailUser from "./ModalDetailUser";
 import Skeleton from "@mui/material/Skeleton";
-import { useSekolahStore } from "../../stores/useSekolahStore";
-import ModalDetailSekolah from "./ModalDetailSekolah";
+import { jwtDecode } from "jwt-decode";
 
-const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading, currentLimit, currentPage, onFetch, onDelete, onUpload }) => {
+// Import komponen lokal (pastikan path sesuai struktur folder Anda)
+import UploadFile from "./UploadFile";
+import ModalDetailUser from "./ModalDetailUser";
+import ModalDetailSekolah from "./ModalDetailSekolah";
+import { useNotificationStore } from "../../stores/useNotifStore";
+import { useUserStore } from "../../stores/useUserStore";
+import { useSekolahStore } from "../../stores/useSekolahStore";
+import ModalConfirm from "./Modal";
+
+const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading, currentLimit, currentPage, onFetch, onDelete, onUpload, initialSearch = "" }) => {
   const { showNotification } = useNotificationStore();
-  const { token } = useUserStore();
-  const { getUserDetail, clearSelectedUser } = useUserStore();
+  const { token, getUserDetail, clearSelectedUser } = useUserStore();
   const { getSekolahDetail } = useSekolahStore();
 
   const [openModal, setOpenModal] = useState(false);
   const [openDelete, setOpenDelete] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [open, setOpen] = useState(false);
   const [openSekolah, setOpenSekolah] = useState(false);
 
@@ -47,12 +48,12 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
   const userRole = decoded?.role;
   const isUserRole = userRole == "user";
 
-  // --- REVISI: LOGIKA DEBOUNCE AGAR TYPING TIDAK LAMBAT ---
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      // Hanya panggil onFetch jika ada perubahan searchTerm yang signifikan
-      onFetch(searchTerm, 1, currentLimit);
-    }, 500); // Delay 500ms
+      const targetPage = searchTerm ? 1 : currentPage;
+
+      onFetch(searchTerm, targetPage, currentLimit);
+    }, 500);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
@@ -88,48 +89,107 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
     setSearchTerm(e.target.value);
   };
 
-  // Tetap sediakan handleSearch jika user menekan Enter di form
   const handleSearch = (e) => {
     if (e) e.preventDefault();
     onFetch(searchTerm, 1, currentLimit);
   };
 
-  const handleOpenModal = async (row) => {
-    if (isDataUser) {
-      try {
-        await getUserDetail(row.id);
+  // --- OPTIMASI 2: useCallback untuk Handler yang masuk ke Render Loop ---
+
+  const handleOpenModal = useCallback(
+    async (row) => {
+      if (isDataUser) {
+        try {
+          await getUserDetail(row.id);
+          setOpen(true);
+        } catch (err) {
+          showNotification("Gagal mengambil detail user", "error");
+          console.log(err);
+        }
+      } else {
         setOpen(true);
-      } catch (err) {
-        showNotification("Gagal mengambil detail user", "error");
-        console.log(err);
       }
-    } else {
-      setOpen(true);
-    }
-  };
+    },
+    [isDataUser, getUserDetail, showNotification]
+  );
 
   const handleCloseModal = () => {
     setOpen(false);
     clearSelectedUser();
   };
 
-  const handleSekolahDetail = async (row) => {
-    try {
-      await getSekolahDetail(row.sekolah_id);
-      setOpenSekolah(true);
-    } catch (error) {
-      console.log("error func", error);
-    }
-  };
+  const handleSekolahDetail = useCallback(
+    async (row) => {
+      try {
+        await getSekolahDetail(row.sekolah_id);
+        setOpenSekolah(true);
+      } catch (error) {
+        console.log("error func", error);
+      }
+    },
+    [getSekolahDetail]
+  );
 
   const handleCloseModalSekolah = () => {
     setOpenSekolah(false);
   };
 
-  // Hapus onFetch dari useEffect init agar tidak double call dengan debounce pertama
-  useEffect(() => {
-    // onFetch(searchTerm, currentPage, currentLimit);
-  }, []);
+  // --- OPTIMASI 3: Memisahkan Render Tabel (Berat) dari Render Input (Ringan) ---
+  const TableContent = useMemo(() => {
+    return (
+      <TableContainer component={Paper} sx={{ flexGrow: 1, overflow: "auto" }}>
+        <Table stickyHeader size="small">
+          <TableHead sx={{ whiteSpace: "nowrap" }}>
+            <TableRow>
+              {columns.map((col, index) => (
+                <TableCell key={index} sx={{ bgcolor: "#f5f5f5", fontWeight: "bold" }}>
+                  {col.header}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {isFetching ? (
+              [...Array(currentLimit || 5)].map((_, rowIndex) => (
+                <TableRow key={rowIndex}>
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={colIndex}>
+                      <Skeleton variant="text" animation="wave" height={30} />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : data && data.length > 0 ? (
+              data.map((row, rowIndex) => (
+                <TableRow key={rowIndex} hover onClick={() => isDataUser && handleOpenModal(row)} sx={{ cursor: isDataUser ? "pointer" : "default", whiteSpace: "nowrap" }}>
+                  {columns.map((col, colIndex) => (
+                    <TableCell onClick={() => isSekolah && handleSekolahDetail(row)} className={isSekolah ? "cursor-pointer" : ""} key={colIndex}>
+                      {isSekolah ? (
+                        <Tooltip title="Klik untuk lihat detail sekolah" arrow>
+                          {/* Bungkus span agar tooltip bekerja sempurna */}
+                          <span>{col.render ? col.render(row, rowIndex) : row[col.accessor]}</span>
+                        </Tooltip>
+                      ) : col.render ? (
+                        col.render(row, rowIndex)
+                      ) : (
+                        row[col.accessor]
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length} align="center" sx={{ py: 10 }}>
+                  <Typography color="textSecondary">Data tidak ditemukan</Typography>
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  }, [isFetching, data, columns, currentLimit, isDataUser, isSekolah, handleOpenModal, handleSekolahDetail]);
 
   if (isLoading) {
     return (
@@ -214,60 +274,17 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
         )}
       </div>
 
-      <ModalConfirm open={openDelete} onClose={() => setOpenDelete(false)} onConfirm={handleDelete} />
+      <ModalConfirm
+        title={" Apakah Anda yakin ingin menghapus seluruh data? Tindakan ini tidak dapat dibatalkan dan semua data yang ada di tabel ini akan hilang secara permanen."}
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        onConfirm={handleDelete}
+      />
       <ModalDetailUser isOpen={open} handleClose={handleCloseModal} onRefresh={() => onFetch(searchTerm, currentPage, currentLimit)} />
       <ModalDetailSekolah open={openSekolah} handleClose={handleCloseModalSekolah} />
 
-      <TableContainer component={Paper} sx={{ flexGrow: 1, overflow: "auto" }}>
-        <Table stickyHeader size="small">
-          <TableHead sx={{ whiteSpace: "nowrap" }}>
-            <TableRow>
-              {columns.map((col, index) => (
-                <TableCell key={index} sx={{ bgcolor: "#f5f5f5", fontWeight: "bold" }}>
-                  {col.header}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {isFetching ? (
-              [...Array(currentLimit || 5)].map((_, rowIndex) => (
-                <TableRow key={rowIndex}>
-                  {columns.map((_, colIndex) => (
-                    <TableCell key={colIndex}>
-                      <Skeleton variant="text" animation="wave" height={30} />
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : data && data.length > 0 ? (
-              data.map((row, rowIndex) => (
-                <TableRow key={rowIndex} hover onClick={() => isDataUser && handleOpenModal(row)} sx={{ cursor: isDataUser ? "pointer" : "default", whiteSpace: "nowrap" }}>
-                  {columns.map((col, colIndex) => (
-                    <TableCell onClick={() => isSekolah && handleSekolahDetail(row)} className={isSekolah ? "cursor-pointer" : ""} key={colIndex}>
-                      {isSekolah ? (
-                        <Tooltip title="Klik untuk lihat detail sekolah" arrow>
-                          {col.render ? col.render(row, rowIndex) : row[col.accessor]}
-                        </Tooltip>
-                      ) : col.render ? (
-                        col.render(row, rowIndex)
-                      ) : (
-                        row[col.accessor]
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length} align="center" sx={{ py: 10 }}>
-                  <Typography color="textSecondary">Data tidak ditemukan</Typography>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {/* Render Tabel yang sudah di-memoize */}
+      {TableContent}
 
       <Box sx={{ p: 2, flexShrink: 0, borderTop: "1px solid #eee" }}>
         <div className="flex flex-row justify-between items-center">
@@ -309,4 +326,5 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
   );
 };
 
-export default DataTable;
+// Bungkus dengan memo untuk optimasi extra di level parent
+export default memo(DataTable);

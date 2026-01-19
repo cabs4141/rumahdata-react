@@ -11,9 +11,10 @@ const usePtkStore = create((set, get) => ({
   totalPages: 0,
   currentPage: 1,
   currentLimit: 10,
+  currentQuery: "",
 
   fetchPtk: async (page, limit) => {
-    set({ isFetching: true, error: null, currentPage: page });
+    set({ isFetching: true, error: null, currentPage: page, currentQuery: "" });
     const token = localStorage.getItem("token");
     try {
       const response = await axios.get(`${apiUrl}/ptk?page=${page}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } });
@@ -24,7 +25,7 @@ const usePtkStore = create((set, get) => ({
       const data = await response.data;
 
       set({
-        ptkData: data.data,
+        ptkData: data,
         isFetching: false,
         totalPages: data.totalPages,
         currentPage: page,
@@ -42,7 +43,7 @@ const usePtkStore = create((set, get) => ({
   },
 
   deletePtk: async () => {
-    const { ptkData } = get();
+    const { ptkData, currentQuery, currentPage, currentLimit, searchPtk, fetchPtk } = get();
     set({ isLoading: true });
 
     if (!ptkData || ptkData.length === 0) {
@@ -54,6 +55,11 @@ const usePtkStore = create((set, get) => ({
       const response = await axios.delete(`${apiUrl}/ptk`, { headers: { Authorization: `Bearer ${token}` } });
       if (response.status === 200) {
         set({ ptkData: [], totalPages: 0, currentPage: 1, isLoading: false });
+        if (currentQuery) {
+          await searchPtk(currentQuery, currentPage, currentLimit);
+        } else {
+          await fetchPtk(currentPage, currentLimit);
+        }
         return true;
       }
     } catch (error) {
@@ -63,12 +69,18 @@ const usePtkStore = create((set, get) => ({
   },
 
   uploadPtk: async (payload) => {
+    const { currentQuery, currentLimit, searchPtk, fetchPtk } = get();
     const token = localStorage.getItem("token");
     try {
       set({ isLoading: true });
       const response = await axios.post(`${apiUrl}/upload/ptk`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      if (currentQuery) {
+        await searchPtk(currentQuery, 1, currentLimit);
+      } else {
+        await fetchPtk(1, currentLimit);
+      }
       set({ isLoading: false });
       return response.status === 200;
     } catch (error) {
@@ -77,13 +89,13 @@ const usePtkStore = create((set, get) => ({
     }
   },
 
-  searchPtk: async (query = "", page = 1, limit = 10) => {
+  searchPtk: async (query, page = 1, limit = 10) => {
     const token = localStorage.getItem("token");
 
+    const effectiveQuery = query !== undefined ? query : get().currentQuery;
     try {
-      set({ isFetching: true });
-      const response = await axios.get(`${apiUrl}/ptk/search?query=${query}&page=${page}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}` } });
-
+      set({ isFetching: true, currentQuery: effectiveQuery });
+      const response = await axios.get(`${apiUrl}/ptk/search?query=${effectiveQuery}&page=${page}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}` } });
       if (!response.status === 200) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

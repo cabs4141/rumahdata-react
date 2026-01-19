@@ -181,7 +181,7 @@ const UserDropdown = () => {
 
           <Box sx={{ p: 3 }}>
             <Typography variant="body2" sx={{ color: "#444", mb: 4, lineHeight: 1.6 }}>
-              Apakah Anda yakin ingin mengakhiri sesi dan keluar dari portal BGTK?
+              Apakah Anda yakin ingin mengakhiri sesi dan keluar dari portal Rumah Data BGTK NTB?
             </Typography>
 
             <Stack direction="row" spacing={2} justifyContent="flex-end">

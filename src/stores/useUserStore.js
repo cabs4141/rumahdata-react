@@ -11,9 +11,10 @@ export const useUserStore = create((set, get) => ({
   currentPage: 1,
   currentLimit: 10,
   selectedUser: null, // Tambahkan ini untuk menampung data user yang diklik
+  isFetching: false,
 
   getUserLists: async () => {
-    set({ loading: true });
+    set({ isFetching: true });
     const token = localStorage.getItem("token");
     if (!token || token === "") {
       console.error("Token tidak ditemukan!");
@@ -23,13 +24,14 @@ export const useUserStore = create((set, get) => ({
     try {
       const response = await axios.get(`${apiUrl}/users`, { headers: { Authorization: `Bearer ${token}` } });
       const data = await response.data.data;
+      console.log(data);
       set({
         userList: data,
-        loading: false,
+        isFetching: false,
       });
     } catch (error) {
       set({
-        loading: false,
+        isFetching: false,
       });
       get().logout();
       throw error;
@@ -73,7 +75,7 @@ export const useUserStore = create((set, get) => ({
       set({ loading: true });
       const token = get().token;
       // Payload: { id_user, status, role }
-      await axios.post(`${apiUrl}/approve-user`, payload, {
+      await axios.post(`${apiUrl}/user`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const currentUser = get().selectedUser;
@@ -106,4 +108,19 @@ export const useUserStore = create((set, get) => ({
     }
   },
   clearSelectedUser: () => set({ selectedUser: null }),
+
+  deleteUser: async (idUser) => {
+    try {
+      set({ loading: true });
+      const token = get().token;
+      const response = await axios.delete(`${apiUrl}/user/${idUser}`, { headers: { Authorization: `Bearer ${token}` } });
+      if (response.status === 200) {
+        set({ loading: false, selectedUser: null });
+        return true;
+      }
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
+  },
 }));
