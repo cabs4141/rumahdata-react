@@ -91,15 +91,11 @@ const AppSidebar = () => {
     setOpenSubmenu((prev) => (prev?.index === index && prev?.type === menuType ? null : { type: menuType, index }));
   };
 
-  // ... kode import tetap sama
-
   const renderMenuItems = (items, menuType) => (
     <ul className="flex flex-col gap-1.5">
       {items.map((nav, index) => {
         const isCurrentOpen = openSubmenu?.type === menuType && openSubmenu?.index === index;
         const isAnySubActive = nav.subItems?.some((sub) => isActive(sub.path));
-
-        // Indikator apakah item ini (induk atau link tunggal) sedang aktif secara visual
         const isVisualActive = isCurrentOpen || isAnySubActive || (nav.path && isActive(nav.path));
 
         return (
@@ -110,7 +106,6 @@ const AppSidebar = () => {
                 className={`w-full flex items-center px-4 py-3 rounded-sm transition-all duration-200 group
                 ${isVisualActive ? "bg-[#1976d2] text-white shadow-md shadow-blue-500/20" : "text-gray-500 hover:bg-gray-100"}`}
               >
-                {/* Ikon jadi putih saat aktif agar terlihat jelas di bg biru */}
                 <span className={`${isVisualActive ? "text-white" : "text-gray-400 group-hover:text-gray-600"}`}>{nav.icon}</span>
                 {(isExpanded || isMobileOpen) && (
                   <>
@@ -158,8 +153,6 @@ const AppSidebar = () => {
     </ul>
   );
 
-  // ... sisa kode return aside tetap sama
-
   return (
     <aside
       className={`fixed top-0 left-0 z-50 h-screen bg-white transition-all duration-300 border-r border-gray-100 flex flex-col
@@ -181,7 +174,7 @@ const AppSidebar = () => {
 
       <div className="flex-1 px-4 overflow-y-auto no-scrollbar">
         <div className="mb-6">
-          <h2 className={`px-4 mb-4 text-[11px] font-bold uppercase tracking-wider text-gray-400 ${!isExpanded ? "text-center" : ""}`}>{isExpanded || isMobileOpen ? "Main Menu" : <HorizontaLDots className="w-5 h-5 mx-auto" />}</h2>
+          <h2 className={`px-4 mb-4 text-[11px] font-bold uppercase tracking-wider text-gray-400 ${!isExpanded ? "text-center" : ""}`}>{isExpanded || isMobileOpen ? "Menu Utama" : <HorizontaLDots className="w-5 h-5 mx-auto" />}</h2>
           {renderMenuItems(filteredNavItems, "main")}
         </div>
       </div>

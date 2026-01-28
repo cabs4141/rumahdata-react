@@ -3,14 +3,13 @@ import axios from "axios";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 export const useUserStore = create((set, get) => ({
-  // Pastikan fallback ke string kosong
   token: localStorage.getItem("token") || "",
   userList: [],
   loading: false,
   totalPages: 1,
   currentPage: 1,
   currentLimit: 10,
-  selectedUser: null, // Tambahkan ini untuk menampung data user yang diklik
+  selectedUser: null,
   isFetching: false,
 
   getUserLists: async () => {
@@ -107,6 +106,7 @@ export const useUserStore = create((set, get) => ({
       throw error;
     }
   },
+
   clearSelectedUser: () => set({ selectedUser: null }),
 
   deleteUser: async (idUser) => {

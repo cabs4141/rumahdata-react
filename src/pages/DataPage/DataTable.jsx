@@ -1,4 +1,3 @@
-import React, { useEffect, useState, useMemo, useCallback, memo } from "react";
 import Box from "@mui/material/Box";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -19,16 +18,17 @@ import InputAdornment from "@mui/material/InputAdornment";
 import SearchIcon from "@mui/icons-material/Search";
 import Tooltip from "@mui/material/Tooltip";
 import Skeleton from "@mui/material/Skeleton";
-import { jwtDecode } from "jwt-decode";
 
-// Import komponen lokal (pastikan path sesuai struktur folder Anda)
 import UploadFile from "./UploadFile";
 import ModalDetailUser from "./ModalDetailUser";
 import ModalDetailSekolah from "./ModalDetailSekolah";
+import ModalConfirm from "./Modal";
+
+import { useEffect, useState, useMemo, useCallback, memo } from "react";
+import { jwtDecode } from "jwt-decode";
 import { useNotificationStore } from "../../stores/useNotifStore";
 import { useUserStore } from "../../stores/useUserStore";
 import { useSekolahStore } from "../../stores/useSekolahStore";
-import ModalConfirm from "./Modal";
 
 const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading, currentLimit, currentPage, onFetch, onDelete, onUpload, initialSearch = "" }) => {
   const { showNotification } = useNotificationStore();
@@ -51,10 +51,8 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
       const targetPage = searchTerm ? 1 : currentPage;
-
       onFetch(searchTerm, targetPage, currentLimit);
     }, 500);
-
     return () => clearTimeout(delayDebounceFn);
   }, [searchTerm]);
 
@@ -94,8 +92,6 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
     onFetch(searchTerm, 1, currentLimit);
   };
 
-  // --- OPTIMASI 2: useCallback untuk Handler yang masuk ke Render Loop ---
-
   const handleOpenModal = useCallback(
     async (row) => {
       if (isDataUser) {
@@ -110,7 +106,7 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
         setOpen(true);
       }
     },
-    [isDataUser, getUserDetail, showNotification]
+    [isDataUser, getUserDetail, showNotification],
   );
 
   const handleCloseModal = () => {
@@ -127,14 +123,13 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
         console.log("error func", error);
       }
     },
-    [getSekolahDetail]
+    [getSekolahDetail],
   );
 
   const handleCloseModalSekolah = () => {
     setOpenSekolah(false);
   };
 
-  // --- OPTIMASI 3: Memisahkan Render Tabel (Berat) dari Render Input (Ringan) ---
   const TableContent = useMemo(() => {
     return (
       <TableContainer component={Paper} sx={{ flexGrow: 1, overflow: "auto" }}>
@@ -231,7 +226,7 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
         {isDataUser ? (
           <TextField
             size="small"
-            placeholder="Cari"
+            placeholder="cari user..."
             value={searchTerm}
             onChange={handleInputSearch}
             sx={{ width: 250 }}
@@ -247,7 +242,7 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
           <form onSubmit={handleSearch} className="flex gap-2">
             <TextField
               size="small"
-              placeholder="Cari data..."
+              placeholder="cari data..."
               value={searchTerm}
               onChange={handleInputSearch}
               sx={{ width: 250 }}
