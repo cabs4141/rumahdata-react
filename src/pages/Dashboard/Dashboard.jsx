@@ -7,34 +7,43 @@ import { usePtkStore } from "../../stores/usePtkStore";
 import { useShallow } from "zustand/react/shallow";
 import { useSekolahStore } from "../../stores/useSekolahStore";
 import { useUserStore } from "../../stores/useUserStore";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
   const { ptkData, fetchPtk } = usePtkStore(
     useShallow((state) => ({
       ptkData: state.ptkData,
       fetchPtk: state.fetchPtk,
-    }))
+    })),
   );
 
   const { sekolahData, fetchSekolah } = useSekolahStore(
     useShallow((state) => ({
       sekolahData: state.sekolahData,
       fetchSekolah: state.fetchSekolah,
-    }))
+    })),
   );
 
-  const { userList, getUserLists } = useUserStore(
+  const { userList, getUserLists, token } = useUserStore(
     useShallow((state) => ({
       userList: state.userList,
       getUserLists: state.getUserLists,
-    }))
+      token: state.token,
+    })),
   );
 
+  // sepasi gtkpg 2026
   useEffect(() => {
+    if (!token) {
+      navigate("/signin");
+      return;
+    }
     fetchPtk();
     fetchSekolah();
     getUserLists();
-  }, [fetchPtk, fetchSekolah, getUserLists]);
+  }, [token, navigate, fetchSekolah, getUserLists]);
 
   const totalPtk = ptkData?.totalData?.toLocaleString("id-ID") || 0;
   const totalUser = userList?.filter((user) => user.status === "pending").length;

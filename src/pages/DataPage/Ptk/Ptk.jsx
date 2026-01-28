@@ -19,7 +19,7 @@ const Ptk = () => {
       uploadPtk: state.uploadPtk,
       searchPtk: state.searchPtk,
       currentQuery: state.currentQuery,
-    }))
+    })),
   );
   const { showNotification } = useNotificationStore();
   const columns = useMemo(
@@ -48,7 +48,7 @@ const Ptk = () => {
       { header: "STATUS KEAKTIFAN", accessor: "status_keaktifan" },
       { header: "NPWP", accessor: "npwp" },
     ],
-    [currentLimit, currentPage]
+    [currentLimit, currentPage],
   );
 
   const handleUpload = useCallback(
@@ -63,7 +63,7 @@ const Ptk = () => {
         showNotification(error.message || "Gagal mengunggah file", "error");
       }
     },
-    [uploadPtk, showNotification, searchPtk, currentLimit]
+    [uploadPtk, showNotification, searchPtk, currentLimit],
   );
   return (
     <div className="w-full max-w-full flex flex-col h-[calc(100vh-140px)] border border-gray-300 rounded-lg shadow-sm bg-white dark:bg-gray-900 overflow-hidden">
