@@ -15,7 +15,6 @@ const useKegiatanStore = create((set, get) => ({
     currentQuery: "",
     abortController: null,
 
-
     // Lightweight: hanya update totalData, tidak menyentuh kegiatanData/currentLimit
     fetchTotalKegiatan: async () => {
         const token = localStorage.getItem("token");

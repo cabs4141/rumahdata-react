@@ -35,7 +35,7 @@ const SignIn = lazy(() => import("./pages/AuthPages/SignIn"));
 const NotFound = lazy(() => import("./pages/OtherPage/NotFound"));
 const LineChart = lazy(() => import("./pages/Charts/LineChart"));
 const Calendar = lazy(() => import("./pages/Calendar"));
-const Blank = lazy(() => import("./pages/Blank"));
+const Settings = lazy(() => import("./pages/Settings/Settings"));
 const Ptk = lazy(() => import("./pages/DataPage/Ptk/Ptk"));
 const Sekolah = lazy(() => import("./pages/DataPage/Sekolah/Sekolah"));
 const Dashboard = lazy(() => import("./pages/Dashboard/Dashboard"));
@@ -67,9 +67,9 @@ const App = () => {
 
               {/* Others Page */}
               <Route path="/kalender" element={<Calendar />} />
-              <Route path="/pengaturan" element={<Blank />} />
 
               <Route element={<ProtectedRoute adminOnly={true} />}>
+                <Route path="/pengaturan" element={<Settings />} />
                 <Route path="/user" element={<User />} />
               </Route>
 

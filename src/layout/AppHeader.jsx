@@ -3,11 +3,13 @@ import { Link } from "react-router";
 import { useSidebar } from "../context/SidebarContext";
 import { ThemeToggleButton } from "../components/molecules/ThemeToggler";
 import UserDropdown from "../components/organisms/Header/UserDropdown";
+import { useSettingsStore } from "../stores/useSettingsStore";
 
 const AppHeader = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
   const inputRef = useRef(null);
+  const { siteTitle, siteSubtitle, logoUrl, siteTitleColor, siteSubtitleColor } = useSettingsStore();
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {
@@ -68,8 +70,11 @@ const AppHeader = () => {
 
           <Link to="/" className="lg:hidden">
             <div className="flex flex-row font-semibold text-blue-light-700 items-center">
-              <img src="/images/logo/sd.png" alt="Logo" width={32} height={32} />
-              <p className="text-xs px-2 dark:text-white">Rumah Data BGTK NTB</p>
+              <img src={logoUrl} alt="Logo" width={32} height={32} />
+              <div className="pl-2">
+                <p className="text-xs dark:text-white" style={{ color: siteTitleColor || "inherit", fontWeight: 700, lineHeight: 1 }}>{siteTitle}</p>
+                <p className="text-[10px] dark:text-gray-400" style={{ color: siteSubtitleColor || "inherit", fontWeight: 600 }}>{siteSubtitle}</p>
+              </div>
             </div>
           </Link>
         </div>

@@ -4,11 +4,13 @@ import { HorizontaLDots, ChevronDownIcon } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import { jwtDecode } from "jwt-decode";
 import { useUserStore } from "../stores/useUserStore";
+import { useSettingsStore } from "../stores/useSettingsStore";
 import PeopleSharpIcon from "@mui/icons-material/PeopleSharp";
 import StorageIcon from "@mui/icons-material/Storage";
 import GridViewIcon from "@mui/icons-material/GridView";
 import MobiledataOffSharpIcon from "@mui/icons-material/MobiledataOffSharp";
 import EventNoteIcon from "@mui/icons-material/EventNote";
+import SettingsIcon from "@mui/icons-material/Settings";
 
 const navItems = [
   {
@@ -50,12 +52,19 @@ const navItems = [
     path: "/user",
     roles: ["admin"],
   },
+  {
+    icon: <SettingsIcon sx={{ fontSize: 22 }} />,
+    name: "Pengaturan",
+    path: "/pengaturan",
+    roles: ["admin"],
+  },
 ];
 
 const AppSidebar = () => {
   const { isExpanded, isMobileOpen } = useSidebar();
   const location = useLocation();
   const { token, permissions = [] } = useUserStore();
+  const { siteTitle, siteSubtitle, logoUrl, siteTitleColor, siteSubtitleColor } = useSettingsStore();
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const [subMenuHeight, setSubMenuHeight] = useState({});
@@ -196,11 +205,11 @@ const AppSidebar = () => {
       {/* Brand Header */}
       <div className={`h-[70px] flex items-center px-6 mb-4`}>
         <Link to="/" className="flex items-center">
-          <img src="/images/logo/sd.png" alt="Logo" width={38} className="flex-shrink-0" />
+          <img src={logoUrl} alt="Logo" width={38} className="flex-shrink-0" />
           {(isExpanded || isMobileOpen) && (
             <div className="ml-3">
-              <p className="text-[#1976d2] font-extrabold text-[15px] leading-tight tracking-tight">RUMAH DATA</p>
-              <p className="text-gray-400 text-[10px] font-bold tracking-widest uppercase">BGTK NTB</p>
+              <p className="font-extrabold text-[15px] leading-tight tracking-tight" style={{ color: siteTitleColor || "#1976d2" }}>{siteTitle}</p>
+              <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color: siteSubtitleColor || "#9ca3af" }}>{siteSubtitle}</p>
             </div>
           )}
         </Link>

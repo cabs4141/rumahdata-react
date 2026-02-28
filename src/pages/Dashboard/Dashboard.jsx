@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { Box, Typography } from "@mui/material";
+import { Box, Typography, Grid } from "@mui/material";
+
 import GroupsIcon from "@mui/icons-material/Groups";
 import SchoolIcon from "@mui/icons-material/School";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
@@ -14,9 +14,12 @@ import { useKegiatanStore } from "../../stores/useKegiatanStore";
 import { useNavigate } from "react-router-dom";
 import KPICard from "../../components/molecules/KPICard";
 import { jwtDecode } from "jwt-decode";
+import { useEffect, useMemo } from "react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+
+
 
   const { ptkData, getPtk, totalData: ptkTotalData } = usePtkStore(
     useShallow((state) => ({
@@ -56,7 +59,7 @@ export default function Dashboard() {
   );
 
   // Get user info from token
-  const userInfo = React.useMemo(() => {
+  const userInfo = useMemo(() => {
     if (token) {
       try {
         const decoded = jwtDecode(token);
@@ -143,6 +146,9 @@ export default function Dashboard() {
         </Box>
 
       </Box>
+
+
+
     </Box>
   );
 }

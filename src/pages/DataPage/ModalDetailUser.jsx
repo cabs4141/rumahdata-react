@@ -270,7 +270,7 @@ const ModalDetailUser = ({ isOpen, handleClose, onRefresh }) => {
                     <Stack spacing={1}>
 
                       <Button variant="outlined" color="error" fullWidth onClick={handleModal} startIcon={<DeleteForeverSharp />}>
-                        Hapus Akun User
+                        Hapus User
                       </Button>
                     </Stack>
                   </Grid>
