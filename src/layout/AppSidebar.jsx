@@ -7,36 +7,55 @@ import { useUserStore } from "../stores/useUserStore";
 import PeopleSharpIcon from "@mui/icons-material/PeopleSharp";
 import StorageIcon from "@mui/icons-material/Storage";
 import GridViewIcon from "@mui/icons-material/GridView";
+import MobiledataOffSharpIcon from "@mui/icons-material/MobiledataOffSharp";
+import EventNoteIcon from "@mui/icons-material/EventNote";
 
 const navItems = [
   {
     icon: <GridViewIcon sx={{ fontSize: 22 }} />,
     name: "Dashboard",
     path: "/",
-    roles: ["super_admin", "user", "admin"],
+    roles: ["user", "admin"],
   },
   {
     icon: <StorageIcon sx={{ fontSize: 22 }} />,
     name: "Data",
-    roles: ["super_admin", "user", "admin"],
+    roles: ["user", "admin"],
     subItems: [
-      { name: "Data Sekolah", path: "/sekolah" },
-      { name: "Data PTK", path: "/ptk" },
-      { name: "Data Kegiatan", path: "/kegiatan" },
+      { name: "SEKOLAH", path: "/sekolah", permission: "sekolah" },
+      { name: "PTK", path: "/ptk", permission: "ptk" },
+      { name: "PPG", path: "/ppg", permission: "ppg" },
+      { name: "PEMETAAN KOMPETENSI", path: "/pemetaan", permission: "pemetaan_kompetensi" },
+      { name: "STATISTIK", path: "/statistik" },
     ],
   },
   {
+    icon: <EventNoteIcon sx={{ fontSize: 22 }} />,
+    name: "Kegiatan",
+    roles: ["user", "admin"],
+    subItems: [
+      { name: "DATA KEGIATAN", path: "/kegiatan", permission: "kegiatan" },
+      { name: "STATISTIK KEGIATAN", path: "/kegiatan/statistik", permission: "kegiatan" },
+    ],
+  },
+  {
+    icon: <MobiledataOffSharpIcon sx={{ fontSize: 22 }} />,
+    name: "Split Data",
+    path: "/split-data",
+    roles: ["admin", "user"],
+  },
+  {
     icon: <PeopleSharpIcon sx={{ fontSize: 22 }} />,
-    name: "Daftar User",
+    name: "Manajemen User",
     path: "/user",
-    roles: ["super_admin"],
+    roles: ["admin"],
   },
 ];
 
 const AppSidebar = () => {
   const { isExpanded, isMobileOpen } = useSidebar();
   const location = useLocation();
-  const { token } = useUserStore();
+  const { token, permissions = [] } = useUserStore();
 
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const [subMenuHeight, setSubMenuHeight] = useState({});
@@ -55,8 +74,23 @@ const AppSidebar = () => {
   }, [token]);
 
   const filteredNavItems = useMemo(() => {
-    return navItems.filter((item) => !item.roles || item.roles.includes(userRole));
-  }, [userRole]);
+    return navItems
+      .filter((item) => {
+        if (!item.roles || item.roles.includes(userRole)) {
+          if (userRole === "user" && item.permission && !permissions.includes(item.permission)) return false;
+          return true;
+        }
+        return false;
+      })
+      .map((item) => {
+        if (item.subItems && userRole === "user") {
+          const filteredSubItems = item.subItems.filter((sub) => !sub.permission || permissions.includes(sub.permission));
+          return { ...item, subItems: filteredSubItems };
+        }
+        return item;
+      })
+      .filter((item) => !item.subItems || item.subItems.length > 0);
+  }, [userRole, permissions]);
 
   const isActive = useCallback((path) => location.pathname === path, [location.pathname]);
 

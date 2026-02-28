@@ -4,7 +4,7 @@ import "./index.css";
 import "swiper/swiper-bundle.css";
 import "flatpickr/dist/flatpickr.css";
 import App from "./App.jsx";
-import { AppWrapper } from "./components/common/PageMeta.jsx";
+import { AppWrapper } from "./components/atoms/PageMeta.jsx";
 import { ThemeProvider } from "./context/ThemeContext.jsx";
 
 const container = document.getElementById("root");

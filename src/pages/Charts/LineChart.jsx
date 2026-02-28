@@ -1,7 +1,7 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb.jsx";
-import ComponentCard from "../../components/common/ComponentCard.jsx";
+import PageBreadcrumb from "../../components/molecules/PageBreadCrumb.jsx";
+import ComponentCard from "../../components/molecules/ComponentCard.jsx";
 import LineChartOne from "../../components/charts/line/LineChartOne";
-import PageMeta from "../../components/common/PageMeta.jsx";
+import PageMeta from "../../components/atoms/PageMeta.jsx";
 
 export default function LineChart() {
   return (

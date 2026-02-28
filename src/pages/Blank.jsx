@@ -1,5 +1,5 @@
-import PageBreadcrumb from "../components/common/PageBreadCrumb.jsx";
-import PageMeta from "../components/common/PageMeta.jsx";
+import PageBreadcrumb from "../components/molecules/PageBreadCrumb.jsx";
+import PageMeta from "../components/atoms/PageMeta.jsx";
 
 export default function Blank() {
   return (

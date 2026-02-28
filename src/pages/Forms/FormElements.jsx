@@ -1,4 +1,4 @@
-import PageBreadcrumb from "../../components/common/PageBreadCrumb.jsx";
+import PageBreadcrumb from "../../components/molecules/PageBreadCrumb.jsx";
 import DefaultInputs from "../../components/form/form-elements/DefaultInputs";
 import InputGroup from "../../components/form/form-elements/InputGroup";
 import DropzoneComponent from "../../components/form/form-elements/DropZone";
@@ -9,7 +9,7 @@ import FileInputExample from "../../components/form/form-elements/FileInputExamp
 import SelectInputs from "../../components/form/form-elements/SelectInputs";
 import TextAreaInput from "../../components/form/form-elements/TextAreaInput";
 import InputStates from "../../components/form/form-elements/InputStates";
-import PageMeta from "../../components/common/PageMeta.jsx";
+import PageMeta from "../../components/atoms/PageMeta.jsx";
 
 export default function FormElements() {
   return (

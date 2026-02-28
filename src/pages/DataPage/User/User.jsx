@@ -1,11 +1,21 @@
 import { useUserStore } from "../../../stores/useUserStore";
 import DataTable from "../DataTable";
-import { Stack, Typography } from "@mui/material";
+import ModalCreateUser from "./ModalCreateUser";
+import { Stack, Typography, Button, Box, Chip } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PendingIcon from "@mui/icons-material/Pending";
 import FiberManualRecordIcon from "@mui/icons-material/FiberManualRecord";
 import { useShallow } from "zustand/react/shallow";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+
+const PERMISSION_OPTIONS = [
+  { id: 1, label: "PTK", value: "ptk" },
+  { id: 2, label: "KEGIATAN", value: "kegiatan" },
+  { id: 6, label: "SEKOLAH", value: "sekolah" },
+  { id: 7, label: "PPG", value: "ppg" },
+  { id: 8, label: "PEMETAAN KOMPETENSI", value: "pemetaan_kompetensi" }
+];
 
 const User = () => {
   const { isFetching, getUserLists, userList, isLoading, currentLimit, currentPage, totalPages } = useUserStore(
@@ -19,6 +29,8 @@ const User = () => {
       totalPages: state.totalPages,
     }))
   );
+
+  const [openCreate, setOpenCreate] = useState(false);
 
   const columns = useMemo(
     () => [
@@ -41,7 +53,7 @@ const User = () => {
             <FiberManualRecordIcon
               sx={{
                 fontSize: 10,
-                color: row.role === "super_admin" ? "error.main" : row.role === "admin" ? "warning.main" : "primary.main",
+                color: row.role === "admin" ? "error.main" : "primary.main",
               }}
             />
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
@@ -51,35 +63,80 @@ const User = () => {
         ),
       },
       {
-        header: "STATUS",
-        accessor: "status",
-        render: (row) => (
-          <Stack direction="row" spacing={1} alignItems="center">
-            {row.status === "approved" ? (
-              <>
-                <CheckCircleIcon sx={{ fontSize: 16, color: "success.main" }} />
-                <Typography variant="body2" color="success.main" sx={{ fontWeight: "bold" }}>
-                  AKTIF
-                </Typography>
-              </>
-            ) : (
-              <>
-                <PendingIcon sx={{ fontSize: 16, color: "primary.main" }} />
-                <Typography variant="body2" color="primary.main" sx={{ fontWeight: "bold" }}>
-                  PENDING
-                </Typography>
-              </>
-            )}
-          </Stack>
-        ),
+        header: "HAK AKSES",
+        accessor: "permissions",
+        render: (row) => {
+          if (row.role === "admin") {
+            return (
+              <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic', fontSize: '0.8rem' }}>
+                Akses Penuh
+              </Typography>
+            );
+          }
+
+          let permsArray = [];
+          if (Array.isArray(row.permissions)) {
+            permsArray = row.permissions;
+          } else if (typeof row.permissions === "string" && row.permissions.trim() !== "") {
+            try {
+              permsArray = JSON.parse(row.permissions);
+              if (!Array.isArray(permsArray)) permsArray = [permsArray];
+            } catch (e) {
+              permsArray = row.permissions.split(',').map(s => s.trim());
+            }
+          }
+
+          return (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              <Chip label="DASHBOARD" size="small" color="default" variant="outlined" sx={{ fontSize: '0.7rem', height: 22 }} />
+              <Chip label="SPLIT DATA" size="small" color="default" variant="outlined" sx={{ fontSize: '0.7rem', height: 22 }} />
+              <Chip label="STATISTIK" size="small" color="default" variant="outlined" sx={{ fontSize: '0.7rem', height: 22 }} />
+              {permsArray.map((perm, index) => {
+                const isObj = typeof perm === 'object' && perm !== null;
+                const pVal = isObj ? (perm.name || perm.value) : perm;
+                const pId = isObj ? (perm.id || perm.permission_id) : Number(perm);
+
+                const opt = PERMISSION_OPTIONS.find(o => o.value === pVal || o.id === pId);
+                if (!opt) return null;
+                return (
+                  <Chip
+                    key={index}
+                    label={opt.label}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                    sx={{ fontSize: '0.7rem', height: 22 }}
+                  />
+                );
+              })}
+            </Box>
+          );
+        }
       },
+
     ],
     [currentLimit, currentPage]
   );
 
   return (
     <div className="flex flex-col h-[calc(100vh-140px)] w-[calc(175vh-140px)] border border-gray-300 rounded-lg shadow-sm bg-white dark:bg-gray-900 overflow-hidden">
-      <DataTable isFetching={isFetching} columns={columns} isLoading={isLoading} data={userList} onFetch={getUserLists} currentLimit={currentLimit} currentPage={currentPage} totalPages={totalPages} dataTitle={"Data User"} />
+      <DataTable
+        isFetching={isFetching}
+        columns={columns}
+        isLoading={isLoading}
+        data={userList}
+        onFetch={getUserLists}
+        currentLimit={currentLimit}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        dataTitle={"Data User"}
+        extraActions={
+          <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setOpenCreate(true)} sx={{ textTransform: "none" }}>
+            TAMBAH USER
+          </Button>
+        }
+      />
+      <ModalCreateUser isOpen={openCreate} handleClose={() => setOpenCreate(false)} onRefresh={() => getUserLists()} />
     </div>
   );
 };

@@ -1,8 +1,8 @@
-import PageBreadcrumb from "../components/common/PageBreadCrumb.jsx";
+import PageBreadcrumb from "../components/molecules/PageBreadCrumb.jsx";
 import UserMetaCard from "../components/UserProfile/UserMetaCard.js";
 import UserInfoCard from "../components/UserProfile/UserInfoCard.js";
 import UserAddressCard from "../components/UserProfile/UserAddressCard.js";
-import PageMeta from "../components/common/PageMeta.jsx";
+import PageMeta from "../components/atoms/PageMeta.jsx";
 
 export default function UserProfiles() {
   return (

@@ -1,4 +1,4 @@
-import PageMeta from "../../components/common/PageMeta.jsx";
+import PageMeta from "../../components/atoms/PageMeta.jsx";
 import AuthLayout from "./AuthPageLayout.jsx";
 import SignUpForm from "../../components/auth/SignUpForm";
 
