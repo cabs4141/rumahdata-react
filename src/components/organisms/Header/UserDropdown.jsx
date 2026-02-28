@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router";
-import { useUserStore } from "../../stores/useUserStore";
+import { useUserStore } from "../../../stores/useUserStore";
 import { jwtDecode } from "jwt-decode";
 import { Box, Typography, Modal, Button, Stack, Menu, MenuItem, Avatar, Divider, Paper } from "@mui/material";
 
@@ -143,7 +143,7 @@ const UserDropdown = () => {
             <VerifiedUserIcon sx={{ mr: 2, color: "#757575", fontSize: 20 }} />
             <Box>
               <Typography variant="caption" display="block" color="text.secondary">
-                Hak Akses
+                ROLE
               </Typography>
               <Typography variant="body2" fontWeight={600} sx={{ textTransform: "capitalize" }}>
                 {userInfo?.role || "-"}

@@ -1,21 +1,28 @@
 import React, { useEffect } from "react";
-import { Box, Card, CardContent, Typography, Stack } from "@mui/material";
-import PeopleIcon from "@mui/icons-material/People";
-import HomeIcon from "@mui/icons-material/Home";
-import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
+import { Box, Typography } from "@mui/material";
+import GroupsIcon from "@mui/icons-material/Groups";
+import SchoolIcon from "@mui/icons-material/School";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
+import EventIcon from "@mui/icons-material/Event";
 import { usePtkStore } from "../../stores/usePtkStore";
 import { useShallow } from "zustand/react/shallow";
 import { useSekolahStore } from "../../stores/useSekolahStore";
 import { useUserStore } from "../../stores/useUserStore";
+import { usePpgStore } from "../../stores/usePpgStore";
+import { useKegiatanStore } from "../../stores/useKegiatanStore";
 import { useNavigate } from "react-router-dom";
+import KPICard from "../../components/molecules/KPICard";
+import { jwtDecode } from "jwt-decode";
 
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  const { ptkData, fetchPtk } = usePtkStore(
+  const { ptkData, getPtk, totalData: ptkTotalData } = usePtkStore(
     useShallow((state) => ({
       ptkData: state.ptkData,
-      fetchPtk: state.fetchPtk,
+      getPtk: state.getPtk,
+      totalData: state.totalData,
     })),
   );
 
@@ -34,74 +41,108 @@ export default function Dashboard() {
     })),
   );
 
-  // sepasi gtkpg 2026
+  const { totalPpgStatistik, getStatistikPpg } = usePpgStore(
+    useShallow((state) => ({
+      totalPpgStatistik: state.totalPpgStatistik,
+      getStatistikPpg: state.getStatistikPpg,
+    }))
+  );
+
+  const { totalData: kegiatanTotalData, fetchTotalKegiatan } = useKegiatanStore(
+    useShallow((state) => ({
+      totalData: state.totalData,
+      fetchTotalKegiatan: state.fetchTotalKegiatan,
+    }))
+  );
+
+  // Get user info from token
+  const userInfo = React.useMemo(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        return decoded;
+      } catch (error) {
+        return null;
+      }
+    }
+    return null;
+  }, [token]);
+
   useEffect(() => {
     if (!token) {
       navigate("/signin");
       return;
     }
-    fetchPtk();
+    getPtk();
     fetchSekolah();
     getUserLists();
-  }, [token, navigate, fetchSekolah, getUserLists]);
+    getStatistikPpg();
+    fetchTotalKegiatan();
+  }, [token, navigate, getPtk, fetchSekolah, getUserLists, getStatistikPpg, fetchTotalKegiatan]);
 
-  const totalPtk = ptkData?.totalData?.toLocaleString("id-ID") || 0;
+  const totalPtk = ptkTotalData?.toLocaleString("id-ID") || 0;
   const totalUser = userList?.filter((user) => user.status === "pending").length;
   const totalSekolah = sekolahData?.totalData?.toLocaleString("id-ID") || 0;
+  const totalPpg = totalPpgStatistik?.toLocaleString("id-ID") || "-";
+  const totalKegiatan = kegiatanTotalData?.toLocaleString("id-ID") || "-";
 
   return (
-    <Box>
-      <Typography variant="h5" fontWeight="bold" gutterBottom>
-        Dashboard
-      </Typography>
+    <Box sx={{ p: { xs: 2, md: 4 }, bgcolor: '#F8FAFC', minHeight: '100vh' }}>
 
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-          gap: 3,
-          mb: 3,
-        }}
-      >
-        <StatCard title="Data Sekolah" value={totalSekolah} icon={<HomeIcon fontSize="large" />} color="linear-gradient(135deg, #2e7d32, #66bb6a)" />
-        <StatCard title="Data PTK" value={totalPtk} icon={<PeopleIcon fontSize="large" />} color="linear-gradient(135deg, #1976d2, #42a5f5)" />
-        <StatCard title="Menunggu Approval" value={totalUser} icon={<HourglassBottomIcon fontSize="large" />} color="linear-gradient(135deg, #ed6c02, #ffb74d)" />
+      {/* Welcome Section */}
+      <Box mb={5}>
+        <Typography variant="h4" fontWeight="800" color="#1C2434" mb={1}>
+          Dashboard
+        </Typography>
+        {/* <Typography variant="subtitle1" color="text.secondary">
+          Selamat Datang kembali
+        </Typography> */}
+      </Box>
+
+      {/* KPI Cards Section */}
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+        <Box sx={{ width: { xs: '100%', sm: '300px' }, flexGrow: 0 }}>
+          <KPICard
+            title="Sekolah"
+            value={totalSekolah}
+            icon={<SchoolIcon fontSize="large" />}
+            color="linear-gradient(135deg, #1E88E5 0%, #42A5F5 100%)"
+            to="/sekolah"
+            variant="filled"
+          />
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: '300px' }, flexGrow: 0 }}>
+          <KPICard
+            title="PTK"
+            value={totalPtk}
+            icon={<GroupsIcon fontSize="large" />}
+            color="linear-gradient(135deg, #43A047 0%, #66BB6A 100%)"
+            to="/ptk"
+            variant="filled"
+          />
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: '300px' }, flexGrow: 0 }}>
+          <KPICard
+            title="PPG"
+            value={totalPpg}
+            icon={<WorkspacePremiumIcon fontSize="large" />}
+            color="linear-gradient(135deg, #FF6F00 0%, #FFA000 100%)"
+            to="/ppg"
+            variant="filled"
+          />
+        </Box>
+        <Box sx={{ width: { xs: '100%', sm: '300px' }, flexGrow: 0 }}>
+          <KPICard
+            title="Kegiatan"
+            value={totalKegiatan}
+            icon={<EventIcon fontSize="large" />}
+            color="linear-gradient(135deg, #8E24AA 0%, #AB47BC 100%)"
+            to="/kegiatan"
+            variant="filled"
+          />
+        </Box>
+
       </Box>
     </Box>
-  );
-}
-
-function StatCard({ title, value, icon, color }) {
-  return (
-    <Card
-      sx={{
-        height: 130,
-        color: "#fff",
-        background: color,
-      }}
-    >
-      <CardContent>
-        <Stack direction="row" justifyContent="space-between" alignItems="center">
-          <Box>
-            <Typography variant="body2" sx={{ opacity: 0.9 }}>
-              {title}
-            </Typography>
-            <Typography variant="h5" fontWeight="bold">
-              {value}
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              bgcolor: "rgba(255,255,255,0.25)",
-              p: 1.5,
-              borderRadius: 2,
-            }}
-          >
-            {icon}
-          </Box>
-        </Stack>
-      </CardContent>
-    </Card>
   );
 }

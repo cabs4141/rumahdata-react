@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ThemeToggleButton } from "../common/ThemeToggleButton";
+import { ThemeToggleButton } from "../../molecules/ThemeToggler";
 import NotificationDropdown from "./NotificationDropdown";
 import UserDropdown from "./UserDropdown";
 import { Link } from "react-router";

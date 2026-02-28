@@ -1,7 +1,6 @@
 import React from "react";
-import GridShape from "../../components/common/GridShape.jsx";
+import GridShape from "../../components/atoms/GridShape.jsx";
 import { Link } from "react-router";
-import ThemeTogglerTwo from "../../components/common/ThemeTogglerTwo.jsx";
 
 export default function AuthLayout({ children }) {
   return (

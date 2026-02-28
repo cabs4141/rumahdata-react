@@ -108,21 +108,7 @@ const SignInForm = () => {
           </Box>
         </form>
 
-        <Box sx={{ mt: 3 }}>
-          <Typography variant="body2" color="text.secondary">
-            Belum memiliki akun?{" "}
-            <Link
-              to="/signup"
-              style={{
-                textDecoration: "none",
-                color: "#1976d2",
-                fontWeight: "500",
-              }}
-            >
-              Daftar disini
-            </Link>
-          </Typography>
-        </Box>
+
       </Box>
     </Container>
   );

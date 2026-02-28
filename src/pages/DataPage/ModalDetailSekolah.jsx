@@ -10,7 +10,7 @@ import MapIcon from "@mui/icons-material/Map";
 import { useSekolahStore } from "../../stores/useSekolahStore";
 
 const ModalDetailSekolah = ({ open, handleClose }) => {
-  const { sekolahDetail } = useSekolahStore();
+  const { sekolahDetail = {} } = useSekolahStore();
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth="md" PaperProps={{ sx: { borderRadius: "6px" } }}>
@@ -23,23 +23,23 @@ const ModalDetailSekolah = ({ open, handleClose }) => {
             <Box>
               <Stack direction="row" alignItems="center">
                 <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                  {sekolahDetail.sekolah_terpilih}
+                  {sekolahDetail?.sekolah_terpilih}
                 </Typography>
               </Stack>
               {/* <Stack direction="row" alignItems="center">
                 <Typography variant="caption" color="text.secondary">
-                  Email: {sekolahDetail.email}
+                  Email: {sekolahDetail?.email}
                 </Typography>
               </Stack> */}
               <Stack direction="row" alignItems="center">
                 <Typography variant="caption" color="text.secondary">
-                  NPSN: {sekolahDetail.npsn}
+                  NPSN: {sekolahDetail?.npsn}
                 </Typography>
               </Stack>
               <Stack direction="row" alignItems="center">
                 {/* <MapIcon fontSize="small" color="action" /> */}
                 <Typography variant="caption" color="text.secondary">
-                  Alamat Jalan: {sekolahDetail.alamat}
+                  Alamat Jalan: {sekolahDetail?.alamat}
                 </Typography>
               </Stack>
             </Box>
@@ -52,7 +52,7 @@ const ModalDetailSekolah = ({ open, handleClose }) => {
 
       <DialogContent dividers>
         <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800, color: "primary.main", display: "flex", alignItems: "center", gap: 1 }}>
-          <PeopleIcon fontSize="small" /> DAFTAR PTK ({sekolahDetail.totalData})
+          <PeopleIcon fontSize="small" /> DAFTAR PTK ({sekolahDetail?.totalData})
         </Typography>
 
         <Paper variant="outlined" sx={{ borderRadius: "6px", overflow: "hidden" }}>

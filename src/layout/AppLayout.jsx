@@ -22,6 +22,7 @@ const LayoutContent = () => {
       transition-all duration-300 ease-in-out
       ${sidebarWidth}
       ${isMobileOpen ? "ml-0" : ""}
+      overflow-x-hidden 
     `}
       >
         <AppHeader />

@@ -4,7 +4,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { useModal } from "../hooks/useModal";
-import PageMeta from "../components/common/PageMeta.jsx";
+import PageMeta from "../components/atoms/PageMeta.jsx";
 
 const Calendar = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -72,12 +72,12 @@ const Calendar = () => {
         prevEvents.map((event) =>
           event.id === selectedEvent.id
             ? {
-                ...event,
-                title: eventTitle,
-                start: eventStartDate,
-                end: eventEndDate,
-                extendedProps: { calendar: eventLevel },
-              }
+              ...event,
+              title: eventTitle,
+              start: eventStartDate,
+              end: eventEndDate,
+              extendedProps: { calendar: eventLevel },
+            }
             : event
         )
       );

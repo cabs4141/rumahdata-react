@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Dialog, Divider, AppBar, Toolbar, IconButton, Typography, Slide, CircularProgress, Box, MenuItem, Select, FormControl, InputLabel, Paper, Stack, Avatar, Grid, Chip } from "@mui/material";
+import { Button, Dialog, Divider, AppBar, Toolbar, IconButton, Typography, Slide, CircularProgress, Box, MenuItem, Select, FormControl, InputLabel, Paper, Stack, Avatar, Grid, Chip, OutlinedInput, Checkbox, ListItemText } from "@mui/material";
 // Icons
 import CloseIcon from "@mui/icons-material/Close";
 import SaveIcon from "@mui/icons-material/Save";
@@ -11,11 +11,20 @@ import DeleteForeverSharp from "@mui/icons-material/DeleteForeverSharp";
 import BadgeIcon from "@mui/icons-material/Badge";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ShieldIcon from "@mui/icons-material/Shield";
+import VpnKeyIcon from "@mui/icons-material/VpnKey";
 import { useUserStore } from "../../stores/useUserStore";
 import { useNotificationStore } from "../../stores/useNotifStore";
 import { useShallow } from "zustand/react/shallow";
 import ModalConfirm from "./Modal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const PERMISSION_OPTIONS = [
+  { id: 1, label: "PTK", value: "ptk" },
+  { id: 2, label: "KEGIATAN", value: "kegiatan" },
+  { id: 6, label: "SEKOLAH", value: "sekolah" },
+  { id: 7, label: "PPG", value: "ppg" },
+  { id: 8, label: "PEMETAAN KOMPETENSI", value: "pemetaan_kompetensi" }
+];
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
@@ -36,30 +45,54 @@ const InfoItem = ({ icon, label, value }) => (
 );
 
 const ModalDetailUser = ({ isOpen, handleClose, onRefresh }) => {
-  const { selectedUser, loading, approveUser, deleteUser } = useUserStore(
+  const { selectedUser, loading, editUser, deleteUser } = useUserStore(
     useShallow((state) => ({
       selectedUser: state.selectedUser,
       loading: state.loading,
-      approveUser: state.approveUser,
+      editUser: state.editUser,
       deleteUser: state.deleteUser,
     }))
   );
   const { showNotification } = useNotificationStore();
   const [role, setRole] = useState("");
+  const [permissions, setPermissions] = useState([]);
   const [openModal, setOpenModal] = useState(false);
 
-  React.useEffect(() => {
-    if (selectedUser?.role) setRole(selectedUser.role);
+  useEffect(() => {
+    if (selectedUser) {
+      setRole(selectedUser.role || "user");
+      if (Array.isArray(selectedUser.permissions)) {
+        setPermissions(selectedUser.permissions);
+      } else {
+        setPermissions([]);
+      }
+    }
   }, [selectedUser]);
 
-  const isSuperAdmin = selectedUser?.role === "super_admin";
-  const isRoleChanged = selectedUser && role !== selectedUser.role;
+  const handlePermissionsChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setPermissions(typeof value === "string" ? value.split(",") : value);
+  };
 
-  const handleAction = async (targetStatus) => {
-    if (isSuperAdmin) return;
+  const isTargetAdmin = selectedUser?.role === "admin";
+  const canEdit = !isTargetAdmin;
+
+  const isRoleChanged = selectedUser && role !== selectedUser.role;
+  const isPermissionsChanged = selectedUser && JSON.stringify([...permissions].sort()) !== JSON.stringify([...(selectedUser.permissions || [])].sort());
+  const isChanged = isRoleChanged || isPermissionsChanged;
+
+  const handleAction = async () => {
+    if (!canEdit) return;
     try {
-      const payload = { id_user: selectedUser.id, status: targetStatus, role: role };
-      await approveUser(payload);
+      const permissionIds = permissions.map(val => {
+        const opt = PERMISSION_OPTIONS.find(o => o.value === val);
+        return opt ? opt.id : null;
+      }).filter(Boolean);
+
+      const payload = { role: role, permissions: permissionIds };
+      await editUser(selectedUser.id, payload);
       showNotification("Perubahan berhasil disimpan", "success");
       if (onRefresh) onRefresh();
     } catch (error) {
@@ -90,10 +123,10 @@ const ModalDetailUser = ({ isOpen, handleClose, onRefresh }) => {
     <>
       <ModalConfirm titleHead={"Hapus User"} title={` Apakah Anda yakin ingin menghapus user ini dari sistem ?`} open={openModal} onClose={() => setOpenModal(false)} onConfirm={handleDelete} />
       <Dialog fullWidth maxWidth="sm" open={isOpen} onClose={handleClose} TransitionComponent={Transition} PaperProps={{ sx: { borderRadius: 1 } }}>
-        <AppBar sx={{ position: "relative", bgcolor: isSuperAdmin ? "#2c3e50" : "primary.main", elevation: 0 }}>
+        <AppBar sx={{ position: "relative", bgcolor: isTargetAdmin ? "#2c3e50" : "primary.main", elevation: 0 }}>
           <Toolbar>
             <Typography sx={{ ml: 2, flex: 1, fontWeight: 700 }} variant="h6">
-              {isSuperAdmin ? "Profil" : "Manajemen User"}
+              Profil Pengguna
             </Typography>
             <IconButton edge="start" color="inherit" onClick={handleClose}>
               <CloseIcon />
@@ -117,14 +150,8 @@ const ModalDetailUser = ({ isOpen, handleClose, onRefresh }) => {
                   </Typography>
                 </Box>
                 <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
-                  <Chip label={selectedUser.role?.toUpperCase()} size="small" color={isSuperAdmin ? "error" : "primary"} sx={{ fontWeight: 700, borderRadius: 1 }} />
-                  <Chip
-                    icon={selectedUser.status === "approved" ? <CheckCircleIcon /> : <PendingIcon />}
-                    label={selectedUser.status === "approved" ? "AKTIF" : "PENDING"}
-                    size="small"
-                    color={selectedUser.status === "approved" ? "success" : "warning"}
-                    sx={{ fontWeight: 700, borderRadius: 1 }}
-                  />
+                  <Chip label={selectedUser.role?.toUpperCase()} size="small" color={isTargetAdmin ? "error" : "primary"} sx={{ fontWeight: 700, borderRadius: 1 }} />
+
                 </Stack>
               </Box>
             </Stack>
@@ -139,71 +166,118 @@ const ModalDetailUser = ({ isOpen, handleClose, onRefresh }) => {
               <Grid item xs={12} sm={6}>
                 <InfoItem icon={<CalendarTodayIcon />} label="Bergabung Sejak" value={selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }) : "-"} />
               </Grid>
+              {isTargetAdmin ? (
+                <div></div>
+              ) : (
+                <Grid item xs={12}>
+                  <Box sx={{ p: 2.5, bgcolor: "grey.50", borderRadius: 2, border: '1px solid', borderColor: 'grey.200' }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 700, textTransform: "uppercase", display: 'block', mb: 1.5, letterSpacing: 0.5 }}>
+                      Akses Data yang Dimiliki
+                    </Typography>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                      <Chip label="DASHBOARD" size="small" color="default" variant="outlined" sx={{ fontWeight: 600, bgcolor: 'white' }} />
+                      <Chip label="SPLIT DATA" size="small" color="default" variant="outlined" sx={{ fontWeight: 600, bgcolor: 'white' }} />
+                      <Chip label="STATISTIK" size="small" color="default" variant="outlined" sx={{ fontWeight: 600, bgcolor: 'white' }} />
+                      {Array.isArray(selectedUser.permissions) && selectedUser.permissions.map((perm, index) => {
+                        const isObj = typeof perm === 'object' && perm !== null;
+                        const pVal = isObj ? (perm.name || perm.value) : perm;
+                        const pId = isObj ? (perm.id || perm.permission_id) : Number(perm);
+
+                        const opt = PERMISSION_OPTIONS.find(o => o.value === pVal || o.id === pId);
+                        if (!opt) return null;
+                        return (
+                          <Chip
+                            key={index}
+                            label={opt.label}
+                            size="small"
+                            color="primary"
+                            variant="outlined"
+                            sx={{ fontWeight: 600, bgcolor: 'white' }}
+                          />
+                        );
+                      })}
+                    </Box>
+                  </Box>
+                </Grid>
+              )}
             </Grid>
 
             {/* ADMINISTRATIVE CONTROL PANEL */}
-            {!isSuperAdmin ? (
+            {canEdit ? (
               <Paper
                 variant="outlined"
                 sx={{
-                  mt: 3,
-                  p: 2.5,
+                  mt: 4,
+                  p: 3,
                   bgcolor: "#f8faff",
                   borderRadius: 2,
                   border: "1px solid",
-                  borderColor: "primary.light",
+                  borderColor: "primary.100",
                 }}
               >
-                <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 800, color: "primary.main", textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: 1 }}>
+                <Typography variant="subtitle2" sx={{ mb: 3, fontWeight: 800, color: "primary.main", textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: 1 }}>
                   Kontrol Administrator
                 </Typography>
 
-                <Grid container spacing={2} alignItems="flex-start" justifyContent={"space-between"}>
-                  {/* Kolom Kiri: Ubah Role */}
-                  <Grid flex={1} item xs={12} sm={5}>
-                    <FormControl fullWidth size="small" sx={{ bgcolor: "white" }}>
-                      <InputLabel>Hak Akses</InputLabel>
-                      <Select value={role} label="Hak Akses" onChange={(e) => setRole(e.target.value)}>
-                        <MenuItem value="user">User </MenuItem>
-                        <MenuItem value="admin">Admin</MenuItem>
-                      </Select>
-                    </FormControl>
-                    {isRoleChanged && (
-                      <Button variant="contained" fullWidth onClick={() => handleAction(selectedUser.status)} startIcon={<SaveIcon />} sx={{ mt: 1, textTransform: "none", fontWeight: 600 }}>
-                        Simpan
-                      </Button>
-                    )}
-                  </Grid>
+                <Grid container spacing={3} alignItems="flex-start" justifyContent={"space-between"}>
+                  {/* Kolom Kiri: Ubah Role dan Akses */}
+                  <Grid flex={1} item xs={12} sm={7}>
+                    <Stack spacing={2.5}>
+                      <FormControl fullWidth size="small" sx={{ bgcolor: "white" }}>
+                        <InputLabel>Hak Akses</InputLabel>
+                        <Select value={role} label="Hak Akses" onChange={(e) => setRole(e.target.value)}>
+                          <MenuItem value="user">User </MenuItem>
+                          <MenuItem value="admin">Admin</MenuItem>
+                        </Select>
+                      </FormControl>
 
-                  {/* Kolom Kanan: Aksi Status & Hapus */}
-                  <Grid item xs={12} sm={7}>
-                    <Stack spacing={1}>
-                      {/* Tombol Aktif/Nonaktif */}
-                      {selectedUser.status === "approved" ? (
-                        <Button variant="outlined" color="error" fullWidth onClick={() => handleAction("pending")} startIcon={<BlockIcon />}>
-                          Nonaktifkan Akun
-                        </Button>
-                      ) : (
-                        <Button variant="outlined" color="success" fullWidth onClick={() => handleAction("approved")} startIcon={<CheckCircleIcon />}>
-                          Aktifkan Akun
-                        </Button>
+                      {role === "user" && (
+                        <FormControl fullWidth size="small" sx={{ bgcolor: "white" }}>
+                          <InputLabel>Izin Akses Data</InputLabel>
+                          <Select
+                            multiple
+                            value={permissions}
+                            onChange={handlePermissionsChange}
+                            input={<OutlinedInput label="Izin Akses Data" />}
+                            renderValue={(selected) => (
+                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                {selected.map((val) => (
+                                  <Chip key={val} label={PERMISSION_OPTIONS.find(o => o.value === val)?.label || val} size="small" color="primary" variant="outlined" />
+                                ))}
+                              </Box>
+                            )}
+                          >
+                            {PERMISSION_OPTIONS.map((perm) => (
+                              <MenuItem key={perm.id} value={perm.value}>
+                                <Checkbox checked={permissions.indexOf(perm.value) > -1} />
+                                <ListItemText primary={perm.label} />
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                       )}
 
-                      {/* Tombol Hapus - Diberi sedikit jarak atau gaya berbeda */}
+                      {isChanged && (
+                        <Button variant="contained" fullWidth onClick={() => handleAction()} startIcon={<SaveIcon />} sx={{ mt: 1, py: 1, textTransform: "none", fontWeight: 700, borderRadius: 1.5 }}>
+                          Simpan Perubahan
+                        </Button>
+                      )}
+                    </Stack>
+                  </Grid>
+
+                  {/* Kolom Kanan: Aksi Hapus */}
+                  <Grid item xs={12} sm={5}>
+                    <Stack spacing={1}>
+
                       <Button variant="outlined" color="error" fullWidth onClick={handleModal} startIcon={<DeleteForeverSharp />}>
-                        Hapus User
+                        Hapus Akun User
                       </Button>
                     </Stack>
                   </Grid>
                 </Grid>
               </Paper>
             ) : (
-              <Box sx={{ mt: 3, p: 2, bgcolor: "#fff3e0", borderRadius: 2, border: "1px dashed #ff9800", display: "flex", alignItems: "center", gap: 2 }}>
-                <HttpsIcon color="warning" />
-                <Typography variant="body2" color="warning.dark" sx={{ fontWeight: 500 }}>
-                  Akun ini dilindungi sistem dan tidak dapat dimodifikasi.
-                </Typography>
-              </Box>
+              <div></div>
             )}
           </Box>
         ) : null}

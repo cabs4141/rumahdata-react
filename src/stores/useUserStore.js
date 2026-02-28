@@ -4,6 +4,7 @@ const apiUrl = import.meta.env.VITE_API_URL;
 
 export const useUserStore = create((set, get) => ({
   token: localStorage.getItem("token") || "",
+  permissions: JSON.parse(localStorage.getItem("permissions")) || [],
   userList: [],
   loading: false,
   totalPages: 1,
@@ -40,8 +41,14 @@ export const useUserStore = create((set, get) => ({
   login: async (payload) => {
     try {
       const response = await axios.post(`${apiUrl}/auth/login`, payload, { headers: { "Content-Type": "application/json" } });
-      if (response.status === 200) localStorage.setItem("token", response.data.token);
-      set({ token: response.data.token });
+      if (response.status === 200) {
+        localStorage.setItem("token", response.data.token);
+        localStorage.setItem("permissions", JSON.stringify(response.data.permissions || []));
+      }
+      set({
+        token: response.data.token,
+        permissions: response.data.permissions || []
+      });
       return true;
     } catch (error) {
       throw error;
@@ -60,32 +67,40 @@ export const useUserStore = create((set, get) => ({
     }
   },
 
+  createUser: async (payload) => {
+    try {
+      set({ loading: true });
+      const token = get().token;
+      const response = await axios.post(`${apiUrl}/auth/create-user`, payload, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      set({ loading: false });
+      return true;
+    } catch (error) {
+      set({ loading: false });
+      throw error;
+    }
+  },
+
   logout: () => {
     localStorage.removeItem("token");
-    set({ token: null });
+    localStorage.removeItem("permissions");
+    set({ token: null, permissions: [] });
   },
 
   refreshUser: () => {
     set({ userInfo: getDecodedToken(), isLoggedIn: !!getDecodedToken() });
   },
 
-  approveUser: async (payload) => {
+  editUser: async (id, payload) => {
     try {
       set({ loading: true });
       const token = get().token;
-      // Payload: { id_user, status, role }
-      await axios.post(`${apiUrl}/user`, payload, {
+      // Payload: { role, permissions }
+      await axios.post(`${apiUrl}/user/${id}`, payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      const currentUser = get().selectedUser;
-      set({
-        loading: false,
-        selectedUser: {
-          ...currentUser,
-          status: payload.status,
-          role: payload.role,
-        },
-      });
+      await get().getUserDetail(id);
       return true;
     } catch (error) {
       set({ loading: false });
