@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { useSidebar } from "../context/SidebarContext";
-import { ThemeToggleButton } from "../components/molecules/ThemeToggler";
-import UserDropdown from "../components/organisms/Header/UserDropdown";
-import { useSettingsStore } from "../stores/useSettingsStore";
+import { useSidebar } from "@/context/SidebarContext";
+import { ThemeToggleButton } from "@/components/molecules/ThemeToggler";
+import UserDropdown from "@/components/organisms/Header/UserDropdown";
+import { useSettingsStore } from "@/features/settings/stores/useSettingsStore";
 
 const AppHeader = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);

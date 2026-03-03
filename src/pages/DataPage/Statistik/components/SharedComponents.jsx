@@ -1,9 +1,9 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import Chart from "react-apexcharts";
-import { Box, Paper, Typography, Grid, CircularProgress } from "@mui/material";
-import { Inbox } from "@mui/icons-material";
-import { COLORS } from "../chartConfig";
+import { Box, Paper, Typography, Grid, CircularProgress, IconButton, Tooltip } from "@mui/material";
+import { Inbox, Download } from "@mui/icons-material";
+import { COLORS } from "@/pages/DataPage/Statistik/chartConfig";
+import html2canvas from "html2canvas";
 
 export const ResizableChart = ({ options, series, type, height }) => {
     const containerRef = useRef(null);
@@ -42,32 +42,65 @@ export const ResizableChart = ({ options, series, type, height }) => {
 
 // KPICard has been moved to src/components/molecules/KPICard.jsx
 
-export const ChartCard = ({ title, children, xs = 12, md, height = 500 }) => (
-    <Grid size={{ xs: xs, md: md ?? xs }}>
-        <Paper
-            elevation={0}
-            sx={{
-                p: { xs: 2, md: 4 },
-                borderRadius: '16px',
-                border: '1px solid #EFF4FB',
-                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.03)',
-                height: '100%',
-                minHeight: height,
-                display: 'flex',
-                flexDirection: 'column',
-                bgcolor: COLORS.bg_card,
-                overflow: 'hidden' // Prevent chart overflow
-            }}
-        >
-            <Typography variant="h6" fontWeight="600" mb={4} color="text.primary" fontSize="1.1rem">
-                {title}
-            </Typography>
-            <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minWidth: 0 }}>
-                {children}
-            </Box>
-        </Paper>
-    </Grid>
-);
+export const ChartCard = ({ title, children, xs = 12, md, height = 500 }) => {
+    const cardRef = useRef(null);
+
+    const handleExport = async () => {
+        if (!cardRef.current) return;
+        try {
+            const canvas = await html2canvas(cardRef.current, {
+                backgroundColor: COLORS.bg_card || "#ffffff",
+                scale: 2 // High-res export
+            });
+            const url = canvas.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.download = `${title.replace(/\\s+/g, '_').toLowerCase()}_chart.png`;
+            link.href = url;
+            link.click();
+        } catch (error) {
+            console.error("Export failed:", error);
+        }
+    };
+
+    return (
+        <Grid size={{ xs: xs, md: md ?? xs }}>
+            <Paper
+                ref={cardRef}
+                elevation={0}
+                sx={{
+                    p: { xs: 2, md: 4 },
+                    borderRadius: '16px',
+                    border: '1px solid #EFF4FB',
+                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.03)',
+                    height: '100%',
+                    minHeight: height,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    bgcolor: COLORS.bg_card,
+                    overflow: 'hidden' // Prevent chart overflow
+                }}
+            >
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+                    <Typography variant="h6" fontWeight="600" color="text.primary" fontSize="1.1rem">
+                        {title}
+                    </Typography>
+                    <Tooltip title="Ekspor Grafik (PNG)">
+                        <IconButton
+                            onClick={handleExport}
+                            size="small"
+                            sx={{ color: '#64748B', '&:hover': { color: '#3B82F6', bgcolor: '#EFF6FF' } }}
+                        >
+                            <Download fontSize="small" />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+                <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minWidth: 0 }}>
+                    {children}
+                </Box>
+            </Paper>
+        </Grid>
+    );
+};
 
 export const Loading = () => <Box display="flex" justifyContent="center" alignItems="center" height="100%" width="100%"><CircularProgress size={30} /></Box>;
 

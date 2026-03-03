@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from "react";
-import { useSekolahStore } from "../../../stores/useSekolahStore";
-import { usePtkStore } from "../../../stores/usePtkStore";
-import { usePpgStore } from "../../../stores/usePpgStore";
+import { useSekolahStore } from "@/features/sekolah/stores/useSekolahStore";
+import { usePtkStore } from "@/features/ptk/stores/usePtkStore";
+import { usePpgStore } from "@/features/ppg/stores/usePpgStore";
 import { useShallow } from "zustand/react/shallow";
 
 export const useStatistikData = (activeTab = 0) => {

@@ -1,9 +1,9 @@
-import { SidebarProvider, useSidebar } from "../context/SidebarContext";
-import AppHeader from "./AppHeader";
-import Backdrop from "./Backdrop";
-import AppSidebar from "./AppSidebar";
+import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
+import AppHeader from "@/layout/AppHeader";
+import Backdrop from "@/layout/Backdrop";
+import AppSidebar from "@/layout/AppSidebar";
 import { Outlet } from "react-router";
-import { useNotificationStore } from "../stores/useNotifStore";
+import { useNotificationStore } from "@/stores/useNotifStore";
 import { Alert, Snackbar } from "@mui/material";
 
 const LayoutContent = () => {

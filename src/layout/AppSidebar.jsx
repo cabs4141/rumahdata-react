@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef, useState, useMemo } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { HorizontaLDots, ChevronDownIcon } from "../icons";
-import { useSidebar } from "../context/SidebarContext";
+import { HorizontaLDots, ChevronDownIcon } from "@/icons";
+import { useSidebar } from "@/context/SidebarContext";
 import { jwtDecode } from "jwt-decode";
-import { useUserStore } from "../stores/useUserStore";
-import { useSettingsStore } from "../stores/useSettingsStore";
+import { useUserStore } from "@/features/users/stores/useUserStore";
+import { useSettingsStore } from "@/features/settings/stores/useSettingsStore";
 import PeopleSharpIcon from "@mui/icons-material/PeopleSharp";
 import StorageIcon from "@mui/icons-material/Storage";
 import GridViewIcon from "@mui/icons-material/GridView";

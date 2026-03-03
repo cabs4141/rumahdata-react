@@ -5,16 +5,15 @@ import SchoolIcon from "@mui/icons-material/School";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import WorkspacePremiumIcon from "@mui/icons-material/WorkspacePremium";
 import EventIcon from "@mui/icons-material/Event";
-import { usePtkStore } from "../../stores/usePtkStore";
+import { usePtkStore } from "@/features/ptk/stores/usePtkStore";
 import { useShallow } from "zustand/react/shallow";
-import { useSekolahStore } from "../../stores/useSekolahStore";
-import { useUserStore } from "../../stores/useUserStore";
-import { usePpgStore } from "../../stores/usePpgStore";
-import { useKegiatanStore } from "../../stores/useKegiatanStore";
+import { useSekolahStore } from "@/features/sekolah/stores/useSekolahStore";
+import { useUserStore } from "@/features/users/stores/useUserStore";
+import { usePpgStore } from "@/features/ppg/stores/usePpgStore";
+import { useKegiatanStore } from "@/features/kegiatan/stores/useKegiatanStore";
 import { useNavigate } from "react-router-dom";
-import KPICard from "../../components/molecules/KPICard";
-import { jwtDecode } from "jwt-decode";
-import { useEffect, useMemo } from "react";
+import KPICard from "@/components/molecules/KPICard";
+import { useEffect } from "react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -58,30 +57,13 @@ export default function Dashboard() {
     }))
   );
 
-  // Get user info from token
-  const userInfo = useMemo(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        return decoded;
-      } catch (error) {
-        return null;
-      }
-    }
-    return null;
-  }, [token]);
-
   useEffect(() => {
-    if (!token) {
-      navigate("/signin");
-      return;
-    }
     getPtk();
     fetchSekolah();
     getUserLists();
     getStatistikPpg();
     fetchTotalKegiatan();
-  }, [token, navigate, getPtk, fetchSekolah, getUserLists, getStatistikPpg, fetchTotalKegiatan]);
+  }, [getPtk, fetchSekolah, getUserLists, getStatistikPpg, fetchTotalKegiatan]);
 
   const totalPtk = ptkTotalData?.toLocaleString("id-ID") || 0;
   const totalUser = userList?.filter((user) => user.status === "pending").length;

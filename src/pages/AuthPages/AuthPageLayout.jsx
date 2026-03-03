@@ -1,5 +1,5 @@
 import React from "react";
-import GridShape from "../../components/atoms/GridShape.jsx";
+import GridShape from "@/components/atoms/GridShape.jsx";
 import { Link } from "react-router";
 
 export default function AuthLayout({ children }) {

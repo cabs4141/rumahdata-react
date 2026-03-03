@@ -3,8 +3,8 @@ import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import { useModal } from "../hooks/useModal";
-import PageMeta from "../components/atoms/PageMeta.jsx";
+import { useModal } from "@/hooks/useModal";
+import PageMeta from "@/components/atoms/PageMeta.jsx";
 
 const Calendar = () => {
   const [selectedEvent, setSelectedEvent] = useState(null);
