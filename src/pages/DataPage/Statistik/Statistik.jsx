@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Box, Paper, Typography, Tabs, Tab } from "@mui/material";
-import { useStatistikData } from "./useStatistikData";
-import SekolahCharts from "./components/SekolahCharts";
-import PtkCharts from "./components/PtkCharts";
-import PpgCharts from "./components/PpgCharts";
+import { useStatistikData } from "@/pages/DataPage/Statistik/useStatistikData";
+import SekolahCharts from "@/features/sekolah/components/SekolahCharts";
+import PtkCharts from "@/features/ptk/components/PtkCharts";
+import PpgCharts from "@/features/ppg/components/PpgCharts";
 
 const Statistik = () => {
 

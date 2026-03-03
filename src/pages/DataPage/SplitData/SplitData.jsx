@@ -11,7 +11,7 @@ import {
     LinearProgress,
 } from "@mui/material";
 import { CloudUpload as CloudUploadIcon, InsertDriveFile as FileIcon } from "@mui/icons-material";
-import { useUserStore } from "../../../stores/useUserStore";
+import { useUserStore } from "@/features/users/stores/useUserStore";
 
 const SplitData = () => {
     const [file, setFile] = useState(null);

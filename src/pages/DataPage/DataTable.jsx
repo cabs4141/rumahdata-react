@@ -26,16 +26,16 @@ import ViewColumnIcon from "@mui/icons-material/ViewColumn";
 import FilterListIcon from "@mui/icons-material/FilterList";
 import MenuItem from "@mui/material/MenuItem";
 
-import UploadFile from "./UploadFile";
-import ModalDetailUser from "./ModalDetailUser";
-import ModalDetailSekolah from "./ModalDetailSekolah";
-import ModalConfirm from "./Modal";
+import UploadFile from "@/pages/DataPage/UploadFile";
+import ModalDetailUser from "@/features/users/components/ModalDetailUser";
+import ModalDetailSekolah from "@/features/sekolah/components/ModalDetailSekolah";
+import ModalConfirm from "@/pages/DataPage/Modal";
 
-import { useEffect, useState, useMemo, useCallback, memo } from "react";
+import { useEffect, useState, useMemo, useCallback, memo, useRef } from "react";
 import { jwtDecode } from "jwt-decode";
-import { useNotificationStore } from "../../stores/useNotifStore";
-import { useUserStore } from "../../stores/useUserStore";
-import { useSekolahStore } from "../../stores/useSekolahStore";
+import { useNotificationStore } from "@/stores/useNotifStore";
+import { useUserStore } from "@/features/users/stores/useUserStore";
+import { useSekolahStore } from "@/features/sekolah/stores/useSekolahStore";
 
 const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading, currentLimit, currentPage, onFetch, onDelete, onUpload, initialSearch = "", filterOptions, filterLabel = "Kabupaten", filterKey = "kabupaten", tahapOptions, tahunOptions, currentFilters, onFilterChange, onFilterOpen, extraActions, onRowClick }) => {
   const { showNotification } = useNotificationStore();
@@ -147,6 +147,9 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
     return columns.filter(col => visibleColumns[col.accessor]);
   }, [columns, visibleColumns]);
 
+  // Use a ref to track if it's the first render to avoid double fetching strictly via debounce
+  const isFirstRender = useRef(true);
+
   // Custom hook for debouncing value
   function useDebounce(value, delay) {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -163,6 +166,14 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
 
   // Effect to trigger search when debounced term changes, OR when filters change
   useEffect(() => {
+    // Prevent overriding the initial load if the debounced term is empty on first render
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      // Optional: you can choose to fetch here once, but only if you assume the parent hasn't already fetched
+      onFetch(debouncedSearchTerm, 1, currentLimit);
+      return;
+    }
+
     onFetch(debouncedSearchTerm, 1, currentLimit);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchTerm, currentFilters]);

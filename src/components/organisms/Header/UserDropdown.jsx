@@ -1,6 +1,6 @@
 import * as React from "react";
 import { useNavigate } from "react-router";
-import { useUserStore } from "../../../stores/useUserStore";
+import { useUserStore } from "@/features/users/stores/useUserStore";
 import { jwtDecode } from "jwt-decode";
 import { Box, Typography, Modal, Button, Stack, Menu, MenuItem, Avatar, Divider, Paper } from "@mui/material";
 
@@ -52,11 +52,10 @@ const UserDropdown = () => {
         const decoded = jwtDecode(token);
         setUserInfo(decoded);
       } catch (error) {
-        logout();
-        navigate("/signin");
+        // ProtectedRoute will handle invalid token globally
       }
     }
-  }, [token, logout, navigate]);
+  }, [token]);
 
   return (
     <Box sx={{ display: { xs: "none", lg: "block" } }}>
