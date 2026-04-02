@@ -14,21 +14,7 @@ import { useUserTeamStore } from "@/features/user_team/stores/useUserTeamStore.j
 import { MenuItem, Select, InputLabel, FormControl } from "@mui/material";
 
 const Kegiatan = () => {
-  const {
-    isFetching,
-    kegiatanData,
-    isLoading,
-    totalPages,
-    currentPage,
-    currentLimit,
-    getKegiatan,
-    insertKegiatan,
-    currentQuery,
-    kegiatanStatistik,
-    filters,
-    setFilters,
-    getStatistikKegiatan,
-  } = useKegiatanStore(
+  const { isFetching, kegiatanData, isLoading, totalPages, currentPage, currentLimit, getKegiatan, insertKegiatan, currentQuery, kegiatanStatistik, filters, setFilters, getStatistikKegiatan } = useKegiatanStore(
     useShallow((state) => ({
       isFetching: state.isFetching,
       kegiatanData: state.kegiatanData,
@@ -39,7 +25,7 @@ const Kegiatan = () => {
       getKegiatan: state.getKegiatan,
       insertKegiatan: state.insertKegiatan,
       currentQuery: state.currentQuery,
-    }))
+    })),
   );
 
   const { userTeams, fetchUserTeams } = useUserTeamStore();
@@ -124,14 +110,14 @@ const Kegiatan = () => {
       { header: "DIBUAT OLEH", accessor: "created_by" },
       { header: "TANGGAL DIBUAT", accessor: "created_at", hide: true },
     ],
-    [currentPage, currentLimit]
+    [currentPage, currentLimit],
   );
 
   const handleFetch = useCallback(
     (query, page, limit) => {
       getKegiatan({ query, page, limit });
     },
-    [getKegiatan]
+    [getKegiatan],
   );
 
   // ── Logic Filter Client-Side ────────────────────────────────────
@@ -175,8 +161,7 @@ const Kegiatan = () => {
     ]);
 
     // Construct CSV String
-    const csvContent = "data:text/csv;charset=utf-8,"
-      + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows.map((e) => e.join(","))].join("\n");
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -195,10 +180,7 @@ const Kegiatan = () => {
   return (
     <>
       {/* Loading backdrop for insert/delete/upload */}
-      <Backdrop
-        open={isLoading}
-        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1, flexDirection: "column", gap: 2, backgroundColor: "rgba(0,0,0,0.7)" }}
-      >
+      <Backdrop open={isLoading} sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1, flexDirection: "column", gap: 2, backgroundColor: "rgba(0,0,0,0.7)" }}>
         <CircularProgress color="inherit" size={60} />
         <Typography variant="h6">Mohon Tunggu...</Typography>
       </Backdrop>
@@ -220,130 +202,68 @@ const Kegiatan = () => {
           onFilterChange={handleFilterChange}
           onRowClick={(row) => setSelectedKegiatan(row)}
           extraActions={
-            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
               {currentFilters.tahun && (
                 <Typography variant="body2" sx={{ mr: 1, color: "text.secondary", fontWeight: 500 }}>
                   Total Filter: {filteredData.length}
                 </Typography>
               )}
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<DownloadIcon />}
-                onClick={handleExportData}
-                sx={{ textTransform: "none", borderColor: "#E2E8F0", color: "#64748B" }}
-              >
-                EXPORT CSV
-              </Button>
+
               {canInsert && (
-                <Button
-                  variant="contained"
-                  size="small"
-                  startIcon={<AddIcon />}
-                  onClick={() => setOpenForm(true)}
-                  sx={{ textTransform: "none" }}
-                  color="success"
-                >
+                <Button variant="contained" size="small" startIcon={<AddIcon />} onClick={() => setOpenForm(true)} sx={{ textTransform: "none" }} color="success">
                   TAMBAH KEGIATAN
                 </Button>
               )}
+              <Button color="inherit" variant="outlined" size="small" endIcon={<DownloadIcon />} onClick={handleExportData} sx={{ textTransform: "none" }}>
+                EXPORT
+              </Button>
             </Box>
           }
         />
       </div>
 
-      <KegiatanDetailDrawer
-        kegiatan={selectedKegiatan}
-        onClose={() => setSelectedKegiatan(null)}
-      />
+      <KegiatanDetailDrawer kegiatan={selectedKegiatan} onClose={() => setSelectedKegiatan(null)} />
 
       {/* ── Modal Form Tambah Kegiatan ──────────────────────────── */}
       <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ fontWeight: 700, pb: 1, color: '#1E293B', fontSize: '1.25rem' }}>
-          {formData.id ? "Edit Kegiatan" : "Tambah Kegiatan Baru"}
-        </DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, pb: 1, color: "#1E293B", fontSize: "1.25rem" }}>{formData.id ? "Edit Kegiatan" : "Tambah Kegiatan Baru"}</DialogTitle>
         <DialogContent dividers sx={{ bgcolor: "#F8FAFC", p: { xs: 2, md: 4 } }}>
           <Box component="form" sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-
             {/* ── INFO UTAMA ── */}
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0' }}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #E2E8F0" }}>
               <Typography variant="subtitle2" color="primary" fontWeight={700} mb={2} sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
                 Informasi Utama
               </Typography>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <TextField
-                    label="Nama Kegiatan"
-                    name="nama_kegiatan"
-                    value={formData.nama_kegiatan}
-                    onChange={handleFormChange}
-                    fullWidth
-                    size="small"
-                    required
-                  />
+                  <TextField label="Nama Kegiatan" name="nama_kegiatan" value={formData.nama_kegiatan} onChange={handleFormChange} fullWidth size="small" required />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Tempat Pelaksanaan"
-                    name="tempat_pelaksanaan"
-                    value={formData.tempat_pelaksanaan}
-                    onChange={handleFormChange}
-                    fullWidth
-                    size="small"
-                    required
-                  />
+                  <TextField label="Tempat Pelaksanaan" name="tempat_pelaksanaan" value={formData.tempat_pelaksanaan} onChange={handleFormChange} fullWidth size="small" required />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
-                    label="Tahun"
-                    name="tahun"
-                    type="number"
-                    value={formData.tahun}
-                    onChange={handleFormChange}
-                    fullWidth
-                    size="small"
-                  />
+                  <TextField label="Tahun" name="tahun" type="number" value={formData.tahun} onChange={handleFormChange} fullWidth size="small" />
                 </Grid>
               </Grid>
             </Paper>
 
             {/* ── WAKTU PELAKSANAAN ── */}
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0' }}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #E2E8F0" }}>
               <Typography variant="subtitle2" color="primary" fontWeight={700} mb={2} sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
                 Waktu Pelaksanaan
               </Typography>
               <Grid container spacing={3}>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Tanggal Mulai"
-                    name="tanggal_mulai"
-                    type="date"
-                    value={formData.tanggal_mulai}
-                    onChange={handleFormChange}
-                    fullWidth
-                    size="small"
-                    required
-                    InputLabelProps={{ shrink: true }}
-                  />
+                  <TextField label="Tanggal Mulai" name="tanggal_mulai" type="date" value={formData.tanggal_mulai} onChange={handleFormChange} fullWidth size="small" required InputLabelProps={{ shrink: true }} />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Tanggal Selesai"
-                    name="tanggal_selesai"
-                    type="date"
-                    value={formData.tanggal_selesai}
-                    onChange={handleFormChange}
-                    fullWidth
-                    size="small"
-                    required
-                    InputLabelProps={{ shrink: true }}
-                  />
+                  <TextField label="Tanggal Selesai" name="tanggal_selesai" type="date" value={formData.tanggal_selesai} onChange={handleFormChange} fullWidth size="small" required InputLabelProps={{ shrink: true }} />
                 </Grid>
               </Grid>
             </Paper>
 
             {/* ── KEPANITIAAN & TARGET PESERTA ── */}
-            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: '1px solid #E2E8F0' }}>
+            <Paper elevation={0} sx={{ p: 3, borderRadius: 3, border: "1px solid #E2E8F0" }}>
               <Typography variant="subtitle2" color="primary" fontWeight={700} mb={2} sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
                 Kepanitiaan & Peserta
               </Typography>
@@ -351,14 +271,7 @@ const Kegiatan = () => {
                 <Grid item xs={12}>
                   <FormControl fullWidth size="small">
                     <InputLabel id="team-select-label">Tim Pengurus</InputLabel>
-                    <Select
-                      labelId="team-select-label"
-                      id="team-select"
-                      name="team_id"
-                      value={formData.team_id || ""}
-                      label="Tim Pengurus"
-                      onChange={handleFormChange}
-                    >
+                    <Select labelId="team-select-label" id="team-select" name="team_id" value={formData.team_id || ""} label="Tim Pengurus" onChange={handleFormChange}>
                       <MenuItem value="">
                         <em>Pilih Tim</em>
                       </MenuItem>
@@ -371,45 +284,20 @@ const Kegiatan = () => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
-                    label="Penanggung Jawab"
-                    name="penanggung_jawab"
-                    value={formData.penanggung_jawab}
-                    onChange={handleFormChange}
-                    fullWidth
-                    size="small"
-                  />
+                  <TextField label="Penanggung Jawab" name="penanggung_jawab" value={formData.penanggung_jawab} onChange={handleFormChange} fullWidth size="small" />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Sasaran Peserta"
-                    name="sasaran_peserta"
-                    type="number"
-                    value={formData.sasaran_peserta}
-                    onChange={handleFormChange}
-                    fullWidth
-                    size="small"
-                    required
-                  />
+                  <TextField label="Sasaran Peserta" name="sasaran_peserta" type="number" value={formData.sasaran_peserta} onChange={handleFormChange} fullWidth size="small" required />
                 </Grid>
                 <Grid item xs={12} sm={6}>
-                  <TextField
-                    label="Total Peserta"
-                    name="total_peserta"
-                    type="number"
-                    value={formData.total_peserta}
-                    onChange={handleFormChange}
-                    fullWidth
-                    size="small"
-                    required
-                  />
+                  <TextField label="Total Peserta" name="total_peserta" type="number" value={formData.total_peserta} onChange={handleFormChange} fullWidth size="small" required />
                 </Grid>
               </Grid>
             </Paper>
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 4, py: 2.5, bgcolor: "#F8FAFC", borderTop: "1px solid #E2E8F0" }}>
-          <Button onClick={() => setOpenForm(false)} disabled={formLoading} sx={{ fontWeight: 600, color: '#64748B' }}>
+          <Button onClick={() => setOpenForm(false)} disabled={formLoading} sx={{ fontWeight: 600, color: "#64748B" }}>
             BATAL
           </Button>
           <Button variant="contained" onClick={handleFormSubmit} disabled={formLoading} sx={{ px: 4, fontWeight: 600, borderRadius: 2 }}>

@@ -29,6 +29,8 @@ import MenuItem from "@mui/material/MenuItem";
 import UploadFile from "@/pages/DataPage/UploadFile";
 import ModalDetailUser from "@/features/users/components/ModalDetailUser";
 import ModalDetailSekolah from "@/features/sekolah/components/ModalDetailSekolah";
+import ModalDetailPtk from "@/features/ptk/components/ModalDetailPtk";
+import ModalDetailPpg from "@/features/ppg/components/ModalDetailPpg";
 import ModalConfirm from "@/pages/DataPage/Modal";
 
 import { useEffect, useState, useMemo, useCallback, memo, useRef } from "react";
@@ -37,7 +39,30 @@ import { useNotificationStore } from "@/stores/useNotifStore";
 import { useUserStore } from "@/features/users/stores/useUserStore";
 import { useSekolahStore } from "@/features/sekolah/stores/useSekolahStore";
 
-const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading, currentLimit, currentPage, onFetch, onDelete, onUpload, initialSearch = "", filterOptions, filterLabel = "Kabupaten", filterKey = "kabupaten", tahapOptions, tahunOptions, currentFilters, onFilterChange, onFilterOpen, extraActions, onRowClick }) => {
+const DataTable = ({
+  isFetching,
+  columns,
+  dataTitle,
+  data,
+  totalPages,
+  isLoading,
+  currentLimit,
+  currentPage,
+  onFetch,
+  onDelete,
+  onUpload,
+  initialSearch = "",
+  filterOptions,
+  filterLabel = "Kabupaten",
+  filterKey = "kabupaten",
+  tahapOptions,
+  tahunOptions,
+  currentFilters,
+  onFilterChange,
+  onFilterOpen,
+  extraActions,
+  onRowClick,
+}) => {
   const { showNotification } = useNotificationStore();
   const { token, getUserDetail, clearSelectedUser } = useUserStore();
   const { getSekolahDetail } = useSekolahStore();
@@ -47,6 +72,10 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
   const [searchTerm, setSearchTerm] = useState(initialSearch);
   const [open, setOpen] = useState(false);
   const [openSekolah, setOpenSekolah] = useState(false);
+  const [openPtk, setOpenPtk] = useState(false);
+  const [selectedPtkRow, setSelectedPtkRow] = useState(null);
+  const [openPpg, setOpenPpg] = useState(false);
+  const [selectedPpgRow, setSelectedPpgRow] = useState(null);
 
   // Column Visibility State
   const [anchorEl, setAnchorEl] = useState(null);
@@ -55,7 +84,9 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
   // Unique key for localStorage based on dataTitle (fallback to 'default' if not provided)
   // Remove spaces and convert to lowercase for a clean key
   const storageKey = useMemo(() => {
-    const cleanTitle = dataTitle ? dataTitle.replace(/\s+/g, '_').toLowerCase() : 'default_table';
+    const cleanTitle = dataTitle
+      ? dataTitle.replace(/\s+/g, "_").toLowerCase()
+      : "default_table";
     return `table_columns_${cleanTitle}`;
   }, [dataTitle]);
 
@@ -67,7 +98,7 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
         const parsed = JSON.parse(saved);
         // Merge with current columns to handle new/removed columns
         const initial = {};
-        columns.forEach(col => {
+        columns.forEach((col) => {
           // If saved has the key, use it. If not, use default from prop.
           if (Object.prototype.hasOwnProperty.call(parsed, col.accessor)) {
             initial[col.accessor] = parsed[col.accessor];
@@ -98,15 +129,15 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
 
   // Effect to handle if columns prop changes significantly (optional, but good for safety)
   // We generally trust the initial state logic, but if columns change dynamically without unmount, we might need this.
-  // For now, let's keep it simple: we rely on initial state. 
-  // If we wanted to react to `columns` prop changes (like new columns added), the current logic 
-  // only runs on mount. 
+  // For now, let's keep it simple: we rely on initial state.
+  // If we wanted to react to `columns` prop changes (like new columns added), the current logic
+  // only runs on mount.
   // Let's add an effect to sync NEW columns if they are missing from visibleColumns state.
   useEffect(() => {
-    setVisibleColumns(prev => {
+    setVisibleColumns((prev) => {
       const next = { ...prev };
       let changed = false;
-      columns.forEach(col => {
+      columns.forEach((col) => {
         if (!Object.prototype.hasOwnProperty.call(next, col.accessor)) {
           next[col.accessor] = !col.hide;
           changed = true;
@@ -115,7 +146,6 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
       return changed ? next : prev;
     });
   }, [columns]);
-
 
   const handleFilterClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -137,6 +167,8 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
 
   const totalHalaman = totalPages ? totalPages?.toLocaleString("id-ID") : "0";
   const isSekolah = dataTitle?.toLowerCase().includes("sekolah");
+  const isPTK = dataTitle?.toLowerCase().includes("ptk");
+  const isPPG = dataTitle?.toLowerCase().includes("ppg");
   const isDataUser = dataTitle?.toLowerCase().includes("user");
   const decoded = jwtDecode(token);
   const userRole = decoded?.role;
@@ -144,7 +176,7 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
 
   // Filter columns to render
   const renderedColumns = useMemo(() => {
-    return columns.filter(col => visibleColumns[col.accessor]);
+    return columns.filter((col) => visibleColumns[col.accessor]);
   }, [columns, visibleColumns]);
 
   // Use a ref to track if it's the first render to avoid double fetching strictly via debounce
@@ -252,6 +284,26 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
     setOpenSekolah(false);
   };
 
+  const handlePtkDetail = useCallback((row) => {
+    setSelectedPtkRow(row);
+    setOpenPtk(true);
+  }, []);
+
+  const handleCloseModalPtk = () => {
+    setOpenPtk(false);
+    setTimeout(() => setSelectedPtkRow(null), 200); // clear after animation
+  };
+
+  const handlePpgDetail = useCallback((row) => {
+    setSelectedPpgRow(row);
+    setOpenPpg(true);
+  }, []);
+
+  const handleCloseModalPpg = () => {
+    setOpenPpg(false);
+    setTimeout(() => setSelectedPpgRow(null), 200); // clear after animation
+  };
+
   const handleOpenFilterClick = (e) => {
     setFilterAnchorEl(e.currentTarget);
     if (onFilterOpen) {
@@ -266,7 +318,10 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
           <TableHead sx={{ whiteSpace: "nowrap" }}>
             <TableRow>
               {renderedColumns.map((col, index) => (
-                <TableCell key={index} sx={{ bgcolor: "#f5f5f5", fontWeight: "bold" }}>
+                <TableCell
+                  key={index}
+                  sx={{ bgcolor: "#f5f5f5", fontWeight: "bold" }}
+                >
                   {col.header}
                 </TableCell>
               ))}
@@ -292,14 +347,46 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
                     if (onRowClick) return onRowClick(row);
                     if (isDataUser) handleOpenModal(row);
                   }}
-                  sx={{ cursor: (onRowClick || isDataUser) ? "pointer" : "default", whiteSpace: "nowrap" }}
+                  sx={{
+                    cursor: onRowClick || isDataUser ? "pointer" : "default",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   {renderedColumns.map((col, colIndex) => (
-                    <TableCell onClick={() => isSekolah && handleSekolahDetail(row)} className={isSekolah ? "cursor-pointer" : ""} key={colIndex}>
+                    <TableCell
+                      className={
+                        isSekolah || isPTK || isPPG ? "cursor-pointer" : ""
+                      }
+                      key={colIndex}
+                      onClick={() => {
+                        if (isSekolah) handleSekolahDetail(row);
+                        if (isPTK) handlePtkDetail(row);
+                        if (isPPG) handlePpgDetail(row);
+                      }}
+                    >
                       {isSekolah ? (
                         <Tooltip title="Klik untuk lihat detail sekolah" arrow>
-                          {/* Bungkus span agar tooltip bekerja sempurna */}
-                          <span>{col.render ? col.render(row, rowIndex) : row[col.accessor]}</span>
+                          <span>
+                            {col.render
+                              ? col.render(row, rowIndex)
+                              : row[col.accessor]}
+                          </span>
+                        </Tooltip>
+                      ) : isPTK ? (
+                        <Tooltip title="Klik untuk lihat detail PTK" arrow>
+                          <span>
+                            {col.render
+                              ? col.render(row, rowIndex)
+                              : row[col.accessor]}
+                          </span>
+                        </Tooltip>
+                      ) : isPPG ? (
+                        <Tooltip title="Klik untuk lihat detail PPG" arrow>
+                          <span>
+                            {col.render
+                              ? col.render(row, rowIndex)
+                              : row[col.accessor]}
+                          </span>
                         </Tooltip>
                       ) : col.render ? (
                         col.render(row, rowIndex)
@@ -312,8 +399,14 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={renderedColumns.length} align="center" sx={{ py: 10 }}>
-                  <Typography color="textSecondary">Data tidak ditemukan</Typography>
+                <TableCell
+                  colSpan={renderedColumns.length}
+                  align="center"
+                  sx={{ py: 10 }}
+                >
+                  <Typography color="textSecondary">
+                    Data tidak ditemukan
+                  </Typography>
                 </TableCell>
               </TableRow>
             )}
@@ -321,7 +414,20 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
         </Table>
       </TableContainer>
     );
-  }, [isFetching, data, renderedColumns, currentLimit, isDataUser, isSekolah, handleOpenModal, handleSekolahDetail]);
+  }, [
+    isFetching,
+    data,
+    renderedColumns,
+    currentLimit,
+    isDataUser,
+    isSekolah,
+    isPTK,
+    isPPG,
+    handleOpenModal,
+    handleSekolahDetail,
+    handlePtkDetail,
+    handlePpgDetail,
+  ]);
 
   if (isLoading) {
     return (
@@ -367,7 +473,11 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
             size="small"
             startIcon={<ViewColumnIcon />}
             onClick={handleFilterClick}
-            sx={{ textTransform: 'none', color: 'text.secondary', borderColor: 'divider' }}
+            sx={{
+              textTransform: "none",
+              color: "text.secondary",
+              borderColor: "divider",
+            }}
           >
             Filter Kolom
           </Button>
@@ -380,7 +490,11 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
                 size="small"
                 startIcon={<FilterListIcon />}
                 onClick={handleOpenFilterClick}
-                sx={{ textTransform: 'none', color: 'text.secondary', borderColor: 'divider' }}
+                sx={{
+                  textTransform: "none",
+                  color: "text.secondary",
+                  borderColor: "divider",
+                }}
               >
                 Filter Data
               </Button>
@@ -388,11 +502,16 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
                 open={Boolean(filterAnchorEl)}
                 anchorEl={filterAnchorEl}
                 onClose={() => setFilterAnchorEl(null)}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-                transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+                anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+                transformOrigin={{ vertical: "top", horizontal: "left" }}
               >
                 <Box sx={{ p: 2, minWidth: 250 }}>
-                  <Typography variant="subtitle2" sx={{ mb: 1.5, fontWeight: 'bold' }}>Filter Data</Typography>
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ mb: 1.5, fontWeight: "bold" }}
+                  >
+                    Filter Data
+                  </Typography>
                   {/* Primary Filter (Kabupaten / Jenjang / etc.) */}
                   {filterOptions?.length > 0 ? (
                     <TextField
@@ -416,9 +535,19 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
                       ))}
                     </TextField>
                   ) : filterOptions && onFilterOpen ? (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 2, p: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        mb: 2,
+                        p: 2,
+                      }}
+                    >
                       <CircularProgress size={24} sx={{ mb: 1 }} />
-                      <Typography variant="caption" color="textSecondary">Memuat filter {filterLabel}...</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        Memuat filter {filterLabel}...
+                      </Typography>
                     </Box>
                   ) : null}
                   {/* Tahap Filter */}
@@ -444,9 +573,19 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
                       ))}
                     </TextField>
                   ) : tahapOptions && onFilterOpen ? (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 1, p: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        mb: 1,
+                        p: 2,
+                      }}
+                    >
                       <CircularProgress size={24} sx={{ mb: 1 }} />
-                      <Typography variant="caption" color="textSecondary">Memuat filter Tahap...</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        Memuat filter Tahap...
+                      </Typography>
                     </Box>
                   ) : null}
                   {/* Tahun Filter */}
@@ -472,9 +611,19 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
                       ))}
                     </TextField>
                   ) : tahunOptions && onFilterOpen ? (
-                    <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 1, p: 2 }}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        flexDirection: "column",
+                        alignItems: "center",
+                        mb: 1,
+                        p: 2,
+                      }}
+                    >
                       <CircularProgress size={24} sx={{ mb: 1 }} />
-                      <Typography variant="caption" color="textSecondary">Memuat filter Tahun...</Typography>
+                      <Typography variant="caption" color="textSecondary">
+                        Memuat filter Tahun...
+                      </Typography>
                     </Box>
                   ) : null}
                 </Box>
@@ -488,16 +637,23 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
             anchorEl={anchorEl}
             onClose={handleFilterClose}
             anchorOrigin={{
-              vertical: 'bottom',
-              horizontal: 'left',
+              vertical: "bottom",
+              horizontal: "left",
             }}
             transformOrigin={{
-              vertical: 'top',
-              horizontal: 'left',
+              vertical: "top",
+              horizontal: "left",
             }}
           >
-            <Box sx={{ p: 2, maxHeight: 400, overflowY: 'auto', minWidth: 200 }}>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>Tampilkan Kolom:</Typography>
+            <Box
+              sx={{ p: 2, maxHeight: 400, overflowY: "auto", minWidth: 200 }}
+            >
+              <Typography
+                variant="subtitle2"
+                sx={{ mb: 1, fontWeight: "bold" }}
+              >
+                Tampilkan Kolom:
+              </Typography>
               <FormGroup>
                 {columns.map((col) => (
                   <FormControlLabel
@@ -509,7 +665,9 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
                         size="small"
                       />
                     }
-                    label={<Typography variant="body2">{col.header}</Typography>}
+                    label={
+                      <Typography variant="body2">{col.header}</Typography>
+                    }
                   />
                 ))}
               </FormGroup>
@@ -555,10 +713,21 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
             <>
               {extraActions}
               {onUpload && (
-                <UploadFile open={openModal} setOpen={setOpenModal} onUpload={onUpload} />
+                <UploadFile
+                  open={openModal}
+                  setOpen={setOpenModal}
+                  onUpload={onUpload}
+                />
               )}
               {onDelete && (
-                <Button onClick={() => setOpenDelete(true)} color="error" variant="contained" startIcon={<DeleteIcon fontSize="small" />} size="small" disabled={!data || data.length === 0}>
+                <Button
+                  onClick={() => setOpenDelete(true)}
+                  color="error"
+                  variant="contained"
+                  startIcon={<DeleteIcon fontSize="small" />}
+                  size="small"
+                  disabled={!data || data.length === 0}
+                >
                   Hapus Data
                 </Button>
               )}
@@ -568,13 +737,32 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
       </div>
 
       <ModalConfirm
-        title={" Apakah Anda yakin ingin menghapus seluruh data? Tindakan ini tidak dapat dibatalkan dan semua data yang ada di tabel ini akan hilang secara permanen."}
+        title={
+          " Apakah Anda yakin ingin menghapus seluruh data? Tindakan ini tidak dapat dibatalkan dan semua data yang ada di tabel ini akan hilang secara permanen."
+        }
         open={openDelete}
         onClose={() => setOpenDelete(false)}
         onConfirm={handleDelete}
       />
-      <ModalDetailUser isOpen={open} handleClose={handleCloseModal} onRefresh={() => onFetch(searchTerm, currentPage, currentLimit)} />
-      <ModalDetailSekolah open={openSekolah} handleClose={handleCloseModalSekolah} />
+      <ModalDetailUser
+        isOpen={open}
+        handleClose={handleCloseModal}
+        onRefresh={() => onFetch(searchTerm, currentPage, currentLimit)}
+      />
+      <ModalDetailSekolah
+        open={openSekolah}
+        handleClose={handleCloseModalSekolah}
+      />
+      <ModalDetailPtk
+        open={openPtk}
+        handleClose={handleCloseModalPtk}
+        ptkDetail={selectedPtkRow || {}}
+      />
+      <ModalDetailPpg
+        open={openPpg}
+        handleClose={handleCloseModalPpg}
+        ppgDetail={selectedPpgRow || {}}
+      />
 
       {/* Render Tabel yang sudah di-memoize */}
       {TableContent}
@@ -583,7 +771,11 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
         <div className="flex flex-row justify-between items-center">
           <div className="flex items-center gap-2 ">
             <label className="text-sm">Tampilkan:</label>
-            <select value={currentLimit} onChange={handleLimit} className="rounded border border-stroke bg-transparent py-1 px-2 outline-none focus:border-primary dark:border-strokedark">
+            <select
+              value={currentLimit}
+              onChange={handleLimit}
+              className="rounded border border-stroke bg-transparent py-1 px-2 outline-none focus:border-primary dark:border-strokedark"
+            >
               <option value="10">10</option>
               <option value="25">25</option>
               <option value="50">50</option>
@@ -593,11 +785,12 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
           </div>
           <div className="flex flex-row gap-8 justify-end items-center">
             <div className="text-sm">
-              halaman <span>{currentPage}</span> dari <span>{totalHalaman}</span>
+              halaman <span>{currentPage}</span> dari{" "}
+              <span>{totalHalaman}</span>
             </div>
             <div className="flex gap-2">
               <button
-                className={`flex items-center justify-center p-1 rounded border transition-colors ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600 "}`}
+                className={`flex items-center justify-center p-1 rounded border transition-colors ${currentPage === 1 ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-blue-700 text-white hover:bg-blue-800 "}`}
                 onClick={prevPage}
                 disabled={currentPage === 1}
               >
@@ -605,7 +798,7 @@ const DataTable = ({ isFetching, columns, dataTitle, data, totalPages, isLoading
               </button>
 
               <button
-                className={`flex items-center justify-center p-1 rounded border transition-colors ${currentPage >= totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-blue-500 text-white hover:bg-blue-600 "}`}
+                className={`flex items-center justify-center p-1 rounded border transition-colors ${currentPage >= totalPages ? "bg-gray-100 text-gray-400 cursor-not-allowed" : "bg-blue-700 text-white hover:bg-blue-800 "}`}
                 onClick={nextPage}
                 disabled={currentPage >= totalPages}
               >

@@ -1,5 +1,5 @@
 // KegiatanDetailDrawer.jsx
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import {
   Drawer,
   Box,
@@ -22,6 +22,10 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
@@ -56,6 +60,7 @@ const KegiatanDetailDrawer = ({ kegiatan, onClose }) => {
   const [deleteTarget, setDeleteTarget] = useState(null); // peserta_id to confirm deletion
   const [deleteKegiatanOpen, setDeleteKegiatanOpen] = useState(false);
   const [deleteAllOpen, setDeleteAllOpen] = useState(false);
+  const [selectedKabupaten, setSelectedKabupaten] = useState("");
 
   // Fetch peserta when drawer opens
   useEffect(() => {
@@ -63,11 +68,24 @@ const KegiatanDetailDrawer = ({ kegiatan, onClose }) => {
       fetchAllPeserta();
     }
     setPage(1);
+    setSelectedKabupaten("");
   }, [open, kegiatan?.id]);
 
   const pesertaList = kegiatan ? getPesertaByKegiatan(kegiatan.id) : [];
-  const totalPages = Math.ceil(pesertaList.length / PESERTA_PER_PAGE);
-  const paginatedPeserta = pesertaList.slice((page - 1) * PESERTA_PER_PAGE, page * PESERTA_PER_PAGE);
+
+  const uniqueKabupaten = useMemo(() => {
+    if (!pesertaList) return [];
+    const kabs = new Set(pesertaList.map((p) => p.kabupaten).filter(Boolean));
+    return Array.from(kabs).sort();
+  }, [pesertaList]);
+
+  const filteredPesertaList = useMemo(() => {
+    if (!selectedKabupaten) return pesertaList;
+    return pesertaList.filter((p) => p.kabupaten === selectedKabupaten);
+  }, [pesertaList, selectedKabupaten]);
+
+  const totalPages = Math.ceil(filteredPesertaList.length / PESERTA_PER_PAGE);
+  const paginatedPeserta = filteredPesertaList.slice((page - 1) * PESERTA_PER_PAGE, page * PESERTA_PER_PAGE);
 
   const handleFileChange = (e) => {
     if (e.target.files[0]) setUploadFile(e.target.files[0]);
@@ -130,18 +148,20 @@ const KegiatanDetailDrawer = ({ kegiatan, onClose }) => {
       <Drawer anchor="right" open={open} onClose={onClose} PaperProps={{ sx: { width: "100%", display: "flex", flexDirection: "column" } }}>
         {/* ── Header ───────────────────────────────────── */}
         <Box sx={{ px: 3, py: 2, display: "flex", alignItems: "flex-start", justifyContent: "space-between", borderBottom: "1px solid", borderColor: "divider", flexShrink: 0 }}>
-          <Box>
+          <Box sx={{ flex: 1, pr: 2 }}>
             <Typography variant="h6" fontWeight={700} sx={{ lineHeight: 1.3 }}>
               {kegiatan?.nama_kegiatan || "-"}
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-              📍 {kegiatan?.tempat_pelaksanaan || "Tempat Pelaksanaan Belum Ditentukan"}
+          </Box>
+          <Box sx={{ display: "flex", flexDirection: "column", alignItems: "flex-end", textAlign: "right" }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Typography component="span" fontSize={14}>📍</Typography> {kegiatan?.tempat_pelaksanaan || "Tempat Pelaksanaan Belum Ditentukan"}
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              📅 {formatDate(kegiatan?.tanggal_mulai)} - {formatDate(kegiatan?.tanggal_selesai)}
+            <Typography variant="body2" color="text.secondary" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Typography component="span" fontSize={14}>📅</Typography> {formatDate(kegiatan?.tanggal_mulai)} - {formatDate(kegiatan?.tanggal_selesai)}
             </Typography>
           </Box>
-          <IconButton onClick={onClose} size="small" sx={{ mt: 0.5 }}>
+          <IconButton onClick={onClose} size="small" sx={{ ml: 2, mt: 0.5 }}>
             <CloseIcon />
           </IconButton>
         </Box>
@@ -188,7 +208,7 @@ const KegiatanDetailDrawer = ({ kegiatan, onClose }) => {
               <Typography variant="subtitle1" fontWeight={700}>
                 Daftar Peserta
               </Typography>
-              <Chip label={pesertaList.length} size="small" color="primary" />
+              <Chip label={filteredPesertaList.length} size="small" color="primary" />
             </Box>
             {canModifyKegiatan && (
               <div className="flex gap-2">
@@ -213,7 +233,38 @@ const KegiatanDetailDrawer = ({ kegiatan, onClose }) => {
             </Box>
           ) : (
             <>
-              <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1 }}>
+              {/* Filter */}
+              <Box sx={{ mb: 2, display: "flex", gap: 2, alignItems: "center" }}>
+                <FormControl size="small" sx={{ minWidth: 220 }}>
+                  <InputLabel id="filter-kab-label">Filter Kabupaten</InputLabel>
+                  <Select
+                    labelId="filter-kab-label"
+                    value={selectedKabupaten}
+                    label="Filter Kabupaten"
+                    onChange={(e) => {
+                      setSelectedKabupaten(e.target.value);
+                      setPage(1);
+                    }}
+                  >
+                    <MenuItem value="">
+                      <em>Semua Kabupaten</em>
+                    </MenuItem>
+                    {uniqueKabupaten.map((k) => (
+                      <MenuItem key={k} value={k}>
+                        {k}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+
+              {filteredPesertaList.length === 0 ? (
+                <Box sx={{ textAlign: "center", py: 4 }}>
+                  <Typography color="text.secondary">Tidak ada peserta dari kabupaten yang dipilih</Typography>
+                </Box>
+              ) : (
+                <>
+                  <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 1 }}>
                 <Table size="small" stickyHeader>
                   <TableHead>
                     <TableRow>
@@ -265,6 +316,8 @@ const KegiatanDetailDrawer = ({ kegiatan, onClose }) => {
                     <NavigateNextIcon />
                   </IconButton>
                 </Box>
+              )}
+                </>
               )}
             </>
           )}

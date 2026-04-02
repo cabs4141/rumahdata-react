@@ -29,29 +29,25 @@ const KABUPATEN_COLORS = [
 // ─── chart option builders ────────────────────────────────────────────────────
 const buildJenjangOptions = (labels, colors) => ({
     chart: { type: "bar", toolbar: { show: false }, fontFamily: "Outfit, sans-serif" },
-    colors,
+    colors: ["#3B82F6"], // Unified solid color (blue) matches the other bar charts
     plotOptions: {
-        bar: { distributed: true, borderRadius: 4, columnWidth: "60%", dataLabels: { position: "top" } },
+        bar: { distributed: false, borderRadius: 0, columnWidth: "50%", dataLabels: { position: "top" } },
     },
     dataLabels: {
         enabled: true,
-        // Label di ATAS bar — warna gelap, ukuran cukup besar, jarak dari puncak bar
         style: { fontSize: "12px", fontWeight: 700, colors: ["#1E293B"] },
-        offsetY: -24,
-        background: {
-            enabled: false,
-        },
+        offsetY: -20,
+        background: { enabled: false },
         formatter: (val) => val > 0 ? val.toLocaleString() : "",
     },
     xaxis: {
         categories: labels,
-        labels: { style: { colors: "#64748B", fontSize: "12px" } },
+        labels: { style: { colors: "#64748B", fontSize: "11px" } },
         axisBorder: { show: false },
         axisTicks: { show: false },
         title: { text: "Jenjang", style: { color: "#64748B", fontSize: "12px" } },
     },
     yaxis: {
-        // Beri ruang ekstra di atas agar label tidak terpotong
         title: { text: "Jumlah Unit", style: { color: "#64748B", fontSize: "12px" } },
         labels: { style: { colors: "#64748B" } },
     },
@@ -381,6 +377,26 @@ const SekolahCharts = ({
                 </Paper>
             </Grid>
 
+            {/* ── Chart 5: Proporsi Negeri vs Swasta Donut ─────────────── */}
+            <ChartCard title="Proporsi Sekolah Negeri vs Swasta" xs={12} md={5}>
+                <ResizableChart
+                    options={donutOpts}
+                    series={donutSeries}
+                    type="donut"
+                    height={420}
+                />
+            </ChartCard>
+
+            {/* ── Spacer so donut + kabupaten total sit side by side ────── */}
+            <ChartCard title="Jumlah Sekolah Berdasarkan Kabupaten" xs={12} md={7}>
+                <ResizableChart
+                    options={kabTotalOpts}
+                    series={[{ name: "Jumlah", data: kabupatenTotalData.data }]}
+                    type="bar"
+                    height={Math.max(400, kabupatenTotalData.labels.length * 48 + 100)}
+                />
+            </ChartCard>
+
             {/* ── Chart 1: Sebaran Sekolah Berdasarkan Jenjang ─────────── */}
             <ChartCard title="Sebaran Sekolah Berdasarkan Jenjang" xs={12}>
                 <ResizableChart
@@ -407,26 +423,6 @@ const SekolahCharts = ({
                         height={420}
                     />
                 </Box>
-            </ChartCard>
-
-            {/* ── Chart 5: Proporsi Negeri vs Swasta Donut ─────────────── */}
-            <ChartCard title="Proporsi Sekolah Negeri vs Swasta" xs={12} md={5}>
-                <ResizableChart
-                    options={donutOpts}
-                    series={donutSeries}
-                    type="donut"
-                    height={420}
-                />
-            </ChartCard>
-
-            {/* ── Spacer so donut + kabupaten total sit side by side ────── */}
-            <ChartCard title="Jumlah Sekolah Berdasarkan Kabupaten" xs={12} md={7}>
-                <ResizableChart
-                    options={kabTotalOpts}
-                    series={[{ name: "Jumlah", data: kabupatenTotalData.data }]}
-                    type="bar"
-                    height={Math.max(400, kabupatenTotalData.labels.length * 48 + 100)}
-                />
             </ChartCard>
 
             {/* ── Chart 2: Komposisi Negeri & Swasta per Kabupaten ─────── */}

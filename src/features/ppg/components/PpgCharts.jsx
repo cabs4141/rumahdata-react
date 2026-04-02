@@ -16,9 +16,8 @@ const DEFAULT_COLOR = "#94A3B8";
 // ─── Option Builders (Sama seperti sebelumnya) ──────────────────────
 const buildBarOptions = (labels, colors, title) => ({
     chart: { type: "bar", toolbar: { show: false }, fontFamily: "Outfit, sans-serif" },
-    colors: colors || ["#3B82F6"],
     plotOptions: {
-        bar: { distributed: !!colors, borderRadius: 4, columnWidth: "50%", dataLabels: { position: "top" } },
+        bar: { distributed: !!colors, borderRadius: 0, columnWidth: "50%", dataLabels: { position: "top" } },
     },
     dataLabels: {
         enabled: true,
@@ -40,9 +39,8 @@ const buildDonutOptions = (labels) => ({
 });
 
 const buildHorizontalBarOptions = (labels, colors) => ({
-    chart: { type: "bar", toolbar: { show: false }, fontFamily: "Outfit, sans-serif" },
     colors: colors,
-    plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: "60%" } },
+    plotOptions: { bar: { horizontal: true, borderRadius: 0, barHeight: "60%" } },
     dataLabels: { enabled: true, style: { colors: ["#fff"] } },
     xaxis: { categories: labels },
     grid: { borderColor: "#F1F5F9", strokeDashArray: 3 },
@@ -78,7 +76,7 @@ const computeLptk = (data) => {
         const l = p.lptk?.toUpperCase().trim() || "TIDAK DIKETAHUI";
         counts[l] = (counts[l] || 0) + 1;
     });
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 15);
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
     return { labels: sorted.map(x => x[0]), series: sorted.map(x => x[1]) };
 };
 
@@ -88,7 +86,7 @@ const computeBidangStudi = (data) => {
         const b = p.bidang_studi_ppg?.toUpperCase().trim() || "TIDAK DIKETAHUI";
         counts[b] = (counts[b] || 0) + 1;
     });
-    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 15);
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
     return { labels: sorted.map(x => x[0]), series: sorted.map(x => x[1]) };
 };
 
@@ -210,7 +208,7 @@ const PpgCharts = ({ isLoading, hasData, ppgStatistik = [] }) => {
             </ChartCard>
 
             {/* ── Baris 3: Sebaran LPTK (Full Width) ─────────────────── */}
-            <ChartCard title="Sebaran LPTK (Top 15)" subtitle="LPTK Terbanyak" xs={12}>
+            <ChartCard title="Sebaran LPTK (Top 10)" subtitle="LPTK Terbanyak" xs={12}>
                 {lptkData.labels.length > 0 ? (
                     <ResizableChart
                         options={buildHorizontalBarOptions(lptkData.labels, ["#8B5CF6"])}
@@ -222,7 +220,7 @@ const PpgCharts = ({ isLoading, hasData, ppgStatistik = [] }) => {
             </ChartCard>
 
             {/* ── Baris 4: Bidang Studi (Full Width) ────────────────── */}
-            <ChartCard title="Bidang Studi PPG (Top 15)" subtitle="Bidang Studi terbanyak diambil oleh Guru" xs={12}>
+            <ChartCard title="Bidang Studi PPG (Top 10)" subtitle="Bidang Studi terbanyak diambil oleh Guru" xs={12}>
                 {bidangStudiData.labels.length > 0 ? (
                     <ResizableChart
                         options={buildHorizontalBarOptions(bidangStudiData.labels, ["#10B981"])}

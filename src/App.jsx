@@ -57,7 +57,7 @@ const Pemetaan = lazy(() => import("@/pages/Pemetaan/Pemetaan"));
 
 // Loading Component
 const Loader = () => (
-  <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+  <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
     <CircularProgress />
   </Box>
 );
@@ -107,14 +107,13 @@ const App = () => {
                 <Route path="/kegiatan/statistik" element={<KegiatanStatistik />} />
               </Route>
 
-              <Route element={<ProtectedRoute requiredPermission="pemetaan_kompetensi" />}>
+              {/* <Route element={<ProtectedRoute requiredPermission="pemetaan_kompetensi" />}>
                 <Route path="/pemetaan" element={<Pemetaan />} />
-              </Route>
+              </Route> */}
             </Route>
 
             {/* Auth Layout */}
             <Route path="/signin" element={<SignIn />} />
-
 
             {/* Fallback Route */}
             <Route path="*" element={<NotFound />} />

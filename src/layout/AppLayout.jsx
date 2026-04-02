@@ -18,7 +18,7 @@ const LayoutContent = () => {
 
       <div
         className={`
-      flex flex-col flex-1 min-w-0
+      flex flex-col flex-1 w-full
       transition-all duration-300 ease-in-out
       ${sidebarWidth}
       ${isMobileOpen ? "ml-0" : ""}
