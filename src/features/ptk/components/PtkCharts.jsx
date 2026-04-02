@@ -11,53 +11,73 @@ const computeData = (data, key, options = {}) => {
     const { useThreshold = false, limit10 = false, excludeEmpty = false } = options;
     const counts = {};
     let total = 0;
-    data.forEach(ptk => {
-        let val = ptk[key]?.trim() || "Tidak Diisi";
+
+    // Single pass to get counts
+    for (let i = 0, len = data.length; i < len; i++) {
+        const val = data[i][key]?.trim() || "Tidak Diisi";
         if (val !== '-' && (!excludeEmpty || (val !== "Tidak Diisi" && val !== ""))) {
             counts[val] = (counts[val] || 0) + 1;
             total++;
         }
-    });
+    }
 
-    let finalCounts = { ...counts };
+    let labels = [];
+    let series = [];
 
     if (useThreshold && total > 0) {
         const threshold = total * 0.05;
-        finalCounts = {};
         let lainnyaCount = 0;
-        Object.keys(counts).forEach(k => {
+
+        for (const k in counts) {
             if (counts[k] <= threshold || k === "Lainnya" || k === "Lain-lain") {
                 lainnyaCount += counts[k];
             } else {
-                finalCounts[k] = counts[k];
+                labels.push(k);
+                series.push(counts[k]);
             }
-        });
-        if (lainnyaCount > 0) finalCounts["Lainnya"] = lainnyaCount;
+        }
+
+        if (lainnyaCount > 0) {
+            labels.push("Lainnya");
+            series.push(lainnyaCount);
+        }
+    } else {
+        for (const k in counts) {
+            labels.push(k);
+            series.push(counts[k]);
+        }
     }
 
-    let sorted = Object.entries(finalCounts).sort((a, b) => b[1] - a[1]);
-    if (limit10) sorted = sorted.slice(0, 10);
+    // Combine for sorting
+    let combined = labels.map((l, i) => ({ label: l, count: series[i] }));
+    combined.sort((a, b) => b.count - a.count);
 
-    return { labels: sorted.map(i => i[0]), series: sorted.map(i => i[1]) };
+    if (limit10) {
+        combined = combined.slice(0, 10);
+    }
+
+    return {
+        labels: combined.map(item => item.label),
+        series: combined.map(item => item.count)
+    };
 };
-
 const computeStatusSekolah = (data) => {
     let n = 0, s = 0;
-    data.forEach(ptk => {
-        const val = ptk.status_sekolah?.toLowerCase();
+    for (let i = 0, len = data.length; i < len; i++) {
+        const val = data[i].status_sekolah?.toLowerCase();
         if (val === 'negeri') n++;
         else if (val === 'swasta') s++;
-    });
+    }
     return { labels: ["Negeri", "Swasta"], series: [n, s] };
 };
 
 const computeGenderPtk = (data) => {
     let p = 0, l = 0;
-    data.forEach(ptk => {
-        const jk = ptk.jenis_kelamin?.toUpperCase().trim();
+    for (let i = 0, len = data.length; i < len; i++) {
+        const jk = data[i].jenis_kelamin?.toUpperCase().trim();
         if (jk === "L" || jk === "LAKI-LAKI") l++;
         else if (jk === "P" || jk === "PEREMPUAN") p++;
-    });
+    }
     return { labels: ["P", "L"], series: [p, l] };
 };
 
@@ -88,7 +108,7 @@ const buildBlueBarOptions = (labels, xTitle) => ({
     colors: CHART_COLORS,
     plotOptions: {
         bar: {
-            borderRadius: 4,
+            borderRadius: 0,
             columnWidth: "55%",
             distributed: true,
             dataLabels: { position: "top" }
@@ -236,34 +256,42 @@ const PtkCharts = ({
                 </Box>
             </Grid> */}
 
-            {/* ROW 1 */}
-            <DashboardCard xs={12} md={8}>
-                <Box width="100%">
-                    <Typography variant="body1" color="#000" ml={2} mt={1}>Status Kepegawaian</Typography>
-                    <ResizableChart options={statusKepegOpts} series={[{ name: 'Jumlah', data: statusKepegData.series }]} type="bar" height={300} />
-                </Box>
-            </DashboardCard>
+            {/* ROW 1: Jumlah Data, Jenis Kelamin, Status Sekolah */}
             <DashboardCard xs={12} md={4}>
                 <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" height="100%">
                     <Typography variant="subtitle1" color="#000" mb={1}>Jumlah Data</Typography>
-                    <Typography variant="caption" color="text.secondary" mb={1} sx={{ mt: -1 }}>Sum of angkatan_psp</Typography>
+                    <Typography variant="caption" color="text.secondary" mb={1} sx={{ mt: -1 }}>distinct ptk_id</Typography>
                     <Box bgcolor="#BBDEFB" px={4} py={1} borderRadius="4px">
-                        <Typography variant="h3" color="#000">{filteredData.length}</Typography>
+                        <Typography variant="h3" color="#000">{filteredData.length.toLocaleString('id-ID')}</Typography>
                     </Box>
-                </Box>
-            </DashboardCard>
-
-            {/* ROW 2 */}
-            <DashboardCard xs={12} md={8}>
-                <Box width="100%">
-                    <Typography variant="body1" color="#000" ml={2} mt={1}>Jenis PTK</Typography>
-                    <ResizableChart options={jenisPtkOpts} series={[{ name: 'Jumlah', data: jenisPtkData.series }]} type="bar" height={300} />
                 </Box>
             </DashboardCard>
             <DashboardCard xs={12} md={4}>
                 <Box width="100%">
                     <Typography variant="body1" color="#000" ml={2} mt={1}>Jenis Kelamin</Typography>
                     <ResizableChart options={genderOpts} series={genderPtkData.series} type="pie" height={280} />
+                </Box>
+            </DashboardCard>
+            <DashboardCard xs={12} md={4}>
+                <Box width="100%">
+                    <Typography variant="body1" color="#000" ml={2} mt={1}>Status Sekolah</Typography>
+                    <ResizableChart options={statusSekolahOpts} series={statusSekolahData.series} type="pie" height={280} />
+                </Box>
+            </DashboardCard>
+
+            {/* ROW 2 */}
+            <DashboardCard xs={12} md={12}>
+                <Box width="100%">
+                    <Typography variant="body1" color="#000" ml={2} mt={1}>Status Kepegawaian</Typography>
+                    <ResizableChart options={statusKepegOpts} series={[{ name: 'Jumlah', data: statusKepegData.series }]} type="bar" height={300} />
+                </Box>
+            </DashboardCard>
+
+            {/* ROW 3 */}
+            <DashboardCard xs={12} md={12}>
+                <Box width="100%">
+                    <Typography variant="body1" color="#000" ml={2} mt={1}>Jenis PTK</Typography>
+                    <ResizableChart options={jenisPtkOpts} series={[{ name: 'Jumlah', data: jenisPtkData.series }]} type="bar" height={300} />
                 </Box>
             </DashboardCard>
 
@@ -312,16 +340,10 @@ const PtkCharts = ({
             </Grid>
 
             {/* ROW 6 */}
-            <DashboardCard xs={12} md={8}>
+            <DashboardCard xs={12} md={12}>
                 <Box width="100%">
                     <Typography variant="body1" color="#000" ml={2} mt={1}>Jumlah Jenjang Sekolah</Typography>
                     <ResizableChart options={jenjangOpts} series={[{ name: 'Jumlah', data: jenjangData.series }]} type="bar" height={300} />
-                </Box>
-            </DashboardCard>
-            <DashboardCard xs={12} md={4}>
-                <Box width="100%">
-                    <Typography variant="body1" color="#000" ml={2} mt={1}>Status Sekolah</Typography>
-                    <ResizableChart options={statusSekolahOpts} series={statusSekolahData.series} type="pie" height={280} />
                 </Box>
             </DashboardCard>
 

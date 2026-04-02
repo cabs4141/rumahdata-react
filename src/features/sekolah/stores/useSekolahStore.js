@@ -258,14 +258,34 @@ const useSekolahStore = create((set, get) => ({
     }
   },
 
+  isFetchingMorePtk: false,
+
   getSekolahDetail: async (id, page = 1, limit = 10) => {
     try {
-      set({ isLoading: true });
+      if (page === 1) {
+        set({ isLoading: true });
+      } else {
+        set({ isFetchingMorePtk: true });
+      }
       const token = localStorage.getItem("token");
       const response = await axios.get(`${apiUrl}/sekolah/${id}/ptk?page=${page}&limit=${limit}`, { headers: { Authorization: `Bearer ${token}` } });
-      set({ isLoading: false, sekolahDetail: response.data || {} });
+
+      const responseData = response.data || {};
+
+      if (page === 1) {
+        set({ isLoading: false, sekolahDetail: responseData });
+      } else {
+        set((state) => ({
+          isFetchingMorePtk: false,
+          sekolahDetail: {
+            ...state.sekolahDetail,
+            data_ptk: [...(state.sekolahDetail?.data_ptk || []), ...(responseData.data_ptk || [])],
+            page: responseData.page,
+          }
+        }));
+      }
     } catch (error) {
-      set({ isLoading: false });
+      set({ isLoading: false, isFetchingMorePtk: false });
       throw error;
     }
   },

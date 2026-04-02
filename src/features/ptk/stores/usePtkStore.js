@@ -24,35 +24,17 @@ const usePtkStore = create((set, get) => ({
 
   getStatistikPtk: async () => {
     const token = localStorage.getItem("token");
-    const PAGE_SIZE = 5000;
     set({ isStatistikLoading: true });
     try {
-      const firstRes = await axios.get(
-        `${apiUrl}/ptk?page=1&limit=${PAGE_SIZE}`,
+      const response = await axios.get(
+        `${apiUrl}/ptk/statistik`,
         { headers: { Authorization: `Bearer ${token}`, Accept: "application/json" } }
       );
-      const firstData = firstRes.data;
-      const totalData = firstData.totalData || firstData.data?.length || 0;
-      const totalPages = firstData.totalPages || 1;
-      let allData = [...(firstData.data || [])];
-
-      if (totalPages > 1) {
-        const pageNumbers = Array.from({ length: totalPages - 1 }, (_, i) => i + 2);
-        const responses = await Promise.all(
-          pageNumbers.map((page) =>
-            axios.get(`${apiUrl}/ptk?page=${page}&limit=${PAGE_SIZE}`, {
-              headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
-            })
-          )
-        );
-        responses.forEach((res) => {
-          allData = allData.concat(res.data?.data || []);
-        });
-      }
+      const data = response.data;
 
       set({
-        ptkStatistik: allData,
-        totalPtkStatistik: totalData,
+        ptkStatistik: data.data || [],
+        totalPtkStatistik: data.totalData || data.data?.length || 0,
         isStatistikLoading: false,
       });
     } catch (error) {

@@ -3,7 +3,7 @@ import {
     Box, Typography, FormControl, InputLabel, Select,
     MenuItem, Chip, Divider,
 } from "@mui/material";
-import { ComposableMap, Geographies, Geography, Marker, Annotation } from "react-simple-maps";
+import { ComposableMap, Geographies, Geography, Marker } from "react-simple-maps";
 
 const GEO_URL = "/nusa_tenggara_barat_52_batas_kabkota.geojson";
 
@@ -26,23 +26,21 @@ const REGION_LABELS = [
 const JENJANG_ORDER = ["PAUD", "PNF", "SD", "SLB", "SMA", "SMK", "SMP"];
 const JENJANG_COLORS = {
     PAUD: "#06B6D4", PNF: "#EAB308", SD: "#8B5CF6",
-    SLB: "#EF4444", SMA: "#3B82F6", SMK: "#F97316", SMP: "#22C55E",
+    SLB: "#EF4444", SMA: "#2563EB", SMK: "#F97316", SMP: "#22C55E",
 };
 
 // Unique color per kabupaten/kota — adjacent regions use maximally different hues
-// Lombok: LoBar↔Mataram(enclave), LoBar↔LoUt, LoBar↔LoTeng, LoUt↔LoTeng↔LoTim
-// Sumbawa chain: SumBar→Sum→Dompu→KabBima→KotaBima(enclave)
 const REGION_COLORS = {
-    "Kabupaten Lombok Barat": "#D97706",  // Amber
-    "Kota Mataram": "#9333EA",  // Purple  (enclave – max contrast with Amber)
-    "Kabupaten Lombok Utara": "#BE185D",  // Pink    (adj: Amber, Purple)
-    "Kabupaten Lombok Tengah": "#2563EB",  // Blue    (adj: Amber, Pink)
-    "Kabupaten Lombok Timur": "#059669",  // Emerald (adj: Pink, Blue)
-    "Kabupaten Sumbawa Barat": "#7C3AED",  // Violet
-    "Kabupaten Sumbawa": "#EA580C",  // Orange  (adj: Violet)
-    "Kabupaten Dompu": "#0891B2",  // Cyan    (adj: Orange)
-    "Kabupaten Bima": "#CA8A04",  // Yellow  (adj: Cyan)
-    "Kota Bima": "#0D9488",  // Teal    (enclave – max contrast with Yellow)
+    "Kabupaten Lombok Barat": "#D97706",
+    "Kota Mataram": "#9333EA",
+    "Kabupaten Lombok Utara": "#BE185D",
+    "Kabupaten Lombok Tengah": "#2563EB",
+    "Kabupaten Lombok Timur": "#059669",
+    "Kabupaten Sumbawa Barat": "#7C3AED",
+    "Kabupaten Sumbawa": "#EA580C",
+    "Kabupaten Dompu": "#0891B2",
+    "Kabupaten Bima": "#CA8A04",
+    "Kota Bima": "#0D9488",
 };
 
 // Short display names
@@ -94,7 +92,6 @@ const resolveGeoName = (rawKab) =>
     rawKab ? (ALIASES[(rawKab).toUpperCase().trim()] || null) : null;
 
 // ─── Fill logic ───────────────────────────────────────────────────────────────
-// Base fill = unique region color. Dim if filter active and this region has 0 count.
 const regionFill = (name, count, hasFilter) =>
     hasFilter && count === 0 ? "#E2E8F0" : (REGION_COLORS[name] || "#94A3B8");
 
@@ -125,14 +122,16 @@ const TooltipContent = ({ info }) => {
                 <Typography sx={{ fontWeight: 700, fontSize: 13 }}>{info.shortName}</Typography>
             </Box>
             <Typography sx={{ fontSize: 11, color: "#94A3B8", mb: 1 }}>
-                Total: <strong style={{ color: "#fff" }}>{total.toLocaleString()} peserta</strong>
+                {/* Format ke Indonesia */}
+                Total: <strong style={{ color: "#fff" }}>{total.toLocaleString("id-ID")} peserta</strong>
             </Typography>
 
             {sorted.length > 0 && (
                 <>
                     <Divider sx={{ borderColor: "rgba(255,255,255,0.1)", mb: 1 }} />
                     {sorted.map(([jenjang, count]) => {
-                        const pct = total > 0 ? ((count / total) * 100).toFixed(0) : 0;
+                        // Format persen dan count ke format Indonesia
+                        const pct = total > 0 ? ((count / total) * 100).toLocaleString("id-ID", { maximumFractionDigits: 0 }) : "0";
                         const barW = total > 0 ? (count / total) * 100 : 0;
                         const color = JENJANG_COLORS[jenjang] || "#94A3B8";
                         return (
@@ -140,7 +139,7 @@ const TooltipContent = ({ info }) => {
                                 <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.2 }}>
                                     <Typography sx={{ fontSize: 10, color: "#CBD5E1" }}>{jenjang}</Typography>
                                     <Typography sx={{ fontSize: 10, color: "#fff", fontWeight: 600 }}>
-                                        {count} ({pct}%)
+                                        {count.toLocaleString("id-ID")} ({pct}%)
                                     </Typography>
                                 </Box>
                                 <Box sx={{ height: 4, bgcolor: "rgba(255,255,255,0.1)", borderRadius: 1 }}>
@@ -303,7 +302,7 @@ const NTBMap = ({ peserta }) => {
             </ComposableMap>
 
             {/* ── Legend ── */}
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1.5, justifyContent: "center" }}>
+            {/* <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 1.5, justifyContent: "center" }}>
                 {Object.entries(REGION_COLORS).map(([name, color]) => (
                     <Box key={name} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                         <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: color, flexShrink: 0 }} />
@@ -312,10 +311,10 @@ const NTBMap = ({ peserta }) => {
                         </Typography>
                     </Box>
                 ))}
-            </Box>
+            </Box> */}
 
             {/* ── Summary badges ── */}
-            <Box sx={{ mt: 2, display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center" }}>
+            <Box sx={{ mt: 1, display: "flex", flexWrap: "wrap", gap: 1, justifyContent: "center" }}>
                 {Object.entries(countMap)
                     .sort((a, b) => b[1] - a[1])
                     .map(([name, count]) => (
@@ -326,12 +325,12 @@ const NTBMap = ({ peserta }) => {
                             opacity: selectedJenjang && count === 0 ? 0.3 : 1,
                         }}>
                             <Typography variant="caption" sx={{ fontWeight: 600, color: "#fff", whiteSpace: "nowrap" }}>
-                                {SHORT_NAMES[name] || name}: <strong>{count > 0 ? count.toLocaleString() : "–"}</strong>
+                                {/* Format ke Indonesia */}
+                                {SHORT_NAMES[name] || name}: <strong>{count > 0 ? count.toLocaleString("id-ID") : "–"} peserta</strong>
                             </Typography>
                         </Box>
                     ))}
             </Box>
-
 
         </Box>
     );

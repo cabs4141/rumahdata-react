@@ -69,7 +69,7 @@ const AppHeader = () => {
           </button>
 
           <Link to="/" className="lg:hidden">
-            <div className="flex flex-row font-semibold text-blue-light-700 items-center">
+            <div className="flex flex-row font-semibold text-blue-700 items-center">
               <img src={logoUrl} alt="Logo" width={32} height={32} />
               <div className="pl-2">
                 <p className="text-xs dark:text-white" style={{ color: siteTitleColor || "inherit", fontWeight: 700, lineHeight: 1 }}>{siteTitle}</p>

@@ -76,11 +76,11 @@ const UserDropdown = () => {
         }}
       >
         <Avatar
-          variant="rounded" // Bentuk kotak dengan sudut melengkung lebih formal daripada lingkaran sempurna
+          variant="rounded"
           sx={{
             width: 32,
             height: 32,
-            bgcolor: "#1976d2", // Biru Dongker Formal
+            bgcolor: "#1D4ED8", // Tailwind blue-700 — konsisten dengan hero banner
             fontSize: "1rem",
             fontWeight: "bold",
           }}

@@ -219,42 +219,38 @@ export const useStatistikData = (activeTab = 0) => {
         if (!ptkStatistik || !sekolahStatistik) return [];
 
         const schoolMap = {};
-        sekolahStatistik.forEach(s => {
-            // Map by multiple potential keys to ensure a hit
-            [s.sekolah_id, s.id_sekolah, s.id, s.npsn].forEach(key => {
-                if (key) {
-                    schoolMap[String(key).trim().toLowerCase()] = {
-                        kabupaten: s.kabupaten,
-                        akreditasi: s.akreditasi,
-                        jenjang: s.jenjang,
-                        status_sekolah: s.status_sekolah
-                    };
-                }
-            });
-        });
-
-        return ptkStatistik.map(ptk => {
-            let sm = null;
-            // Try matching any of the PTK foreign keys against the schoolMap
-            const foreignKeys = [ptk.sekolah_id, ptk.id_sekolah, ptk.npsn];
-            for (let fk of foreignKeys) {
-                if (fk) {
-                    const mapped = schoolMap[String(fk).trim().toLowerCase()];
-                    if (mapped) {
-                        sm = mapped;
-                        break;
-                    }
-                }
-            }
-            sm = sm || {};
-            return {
-                ...ptk,
-                kabupaten: sm.kabupaten || "",
-                akreditasi: sm.akreditasi || "",
-                jenjang: sm.jenjang || "",
-                status_sekolah: sm.status_sekolah || ""
+        for (let i = 0, len = sekolahStatistik.length; i < len; i++) {
+            const s = sekolahStatistik[i];
+            const val = {
+                kabupaten: s.kabupaten,
+                akreditasi: s.akreditasi,
+                jenjang: s.jenjang,
+                status_sekolah: s.status_sekolah
             };
-        });
+            if (s.sekolah_id) schoolMap[String(s.sekolah_id).trim().toLowerCase()] = val;
+            if (s.id_sekolah) schoolMap[String(s.id_sekolah).trim().toLowerCase()] = val;
+            if (s.id) schoolMap[String(s.id).trim().toLowerCase()] = val;
+            if (s.npsn) schoolMap[String(s.npsn).trim().toLowerCase()] = val;
+        }
+
+        const result = new Array(ptkStatistik.length);
+        for (let i = 0, len = ptkStatistik.length; i < len; i++) {
+            const ptk = ptkStatistik[i];
+            let sm = null;
+
+            if (ptk.sekolah_id) sm = schoolMap[String(ptk.sekolah_id).trim().toLowerCase()];
+            if (!sm && ptk.id_sekolah) sm = schoolMap[String(ptk.id_sekolah).trim().toLowerCase()];
+            if (!sm && ptk.npsn) sm = schoolMap[String(ptk.npsn).trim().toLowerCase()];
+
+            result[i] = {
+                ...ptk,
+                kabupaten: sm?.kabupaten || "",
+                akreditasi: sm?.akreditasi || "",
+                jenjang: sm?.jenjang || "",
+                status_sekolah: sm?.status_sekolah || ""
+            };
+        }
+        return result;
     }, [ptkStatistik, sekolahStatistik]);
 
     // --- PPG Aggregations ---
@@ -289,8 +285,8 @@ export const useStatistikData = (activeTab = 0) => {
             const l = p.lptk?.toUpperCase().trim() || "TIDAK DIKETAHUI";
             counts[l] = (counts[l] || 0) + 1;
         });
-        // Limit to top 15 LPTK
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 15);
+        // Limit to top 10 LPTK
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
         return { labels: sorted.map(x => x[0]), series: sorted.map(x => x[1]) };
     }, [ppgStatistik]);
 
@@ -301,8 +297,8 @@ export const useStatistikData = (activeTab = 0) => {
             const b = p.bidang_studi_ppg?.toUpperCase().trim() || "TIDAK DIKETAHUI";
             counts[b] = (counts[b] || 0) + 1;
         });
-        // Limit to top 15 bidang studi
-        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 15);
+        // Limit to top 10 bidang studi
+        const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 10);
         return { labels: sorted.map(x => x[0]), series: sorted.map(x => x[1]) };
     }, [ppgStatistik]);
 

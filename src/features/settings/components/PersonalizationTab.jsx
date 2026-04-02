@@ -17,17 +17,20 @@ import SaveIcon from "@mui/icons-material/Save";
 import ImageIcon from "@mui/icons-material/Image";
 import { useSettingsStore } from "@/features/settings/stores/useSettingsStore";
 import { useNotificationStore } from "@/stores/useNotifStore";
+import { useDeskripsiStore } from "@/features/deskripsi/stores/useDeskripsiStore";
 
 const PersonalizationTab = () => {
     const { siteTitle, siteSubtitle, logoUrl, siteTitleColor, siteSubtitleColor, saveAll, updateLogo, resetDefaults } =
         useSettingsStore();
     const { showNotification } = useNotificationStore();
+    const { deskripsi, getDeskripsi, updateDeskripsi, isLoading: isDeskripsiLoading } = useDeskripsiStore();
 
     const [formTitle, setFormTitle] = useState(siteTitle);
     const [formSubtitle, setFormSubtitle] = useState(siteSubtitle);
     const [formTitleColor, setFormTitleColor] = useState(siteTitleColor);
     const [formSubtitleColor, setFormSubtitleColor] = useState(siteSubtitleColor);
     const [previewLogo, setPreviewLogo] = useState(logoUrl);
+    const [formDeskripsi, setFormDeskripsi] = useState(deskripsi);
     const [logoFile, setLogoFile] = useState(null);
     const fileInputRef = useRef(null);
 
@@ -38,7 +41,12 @@ const PersonalizationTab = () => {
         setFormTitleColor(siteTitleColor);
         setFormSubtitleColor(siteSubtitleColor);
         setPreviewLogo(logoUrl);
-    }, [siteTitle, siteSubtitle, siteTitleColor, siteSubtitleColor, logoUrl]);
+        setFormDeskripsi(deskripsi);
+    }, [siteTitle, siteSubtitle, siteTitleColor, siteSubtitleColor, logoUrl, deskripsi]);
+
+    useEffect(() => {
+        getDeskripsi();
+    }, [getDeskripsi]);
 
     const handleLogoSelect = (e) => {
         const file = e.target.files?.[0];
@@ -67,6 +75,9 @@ const PersonalizationTab = () => {
             if (logoFile) {
                 await updateLogo(logoFile);
             }
+            if (formDeskripsi !== deskripsi) {
+                await updateDeskripsi(formDeskripsi);
+            }
             saveAll({
                 siteTitle: formTitle,
                 siteSubtitle: formSubtitle,
@@ -91,7 +102,8 @@ const PersonalizationTab = () => {
         formSubtitle !== siteSubtitle ||
         formTitleColor !== siteTitleColor ||
         formSubtitleColor !== siteSubtitleColor ||
-        logoFile !== null;
+        logoFile !== null ||
+        formDeskripsi !== deskripsi;
 
     return (
         <Box sx={{ maxWidth: 900, mx: "auto" }}>
@@ -200,6 +212,21 @@ const PersonalizationTab = () => {
                                 sx={{ width: { xs: "100%", sm: 120 } }}
                             />
                         </Stack>
+                        
+                        {/* Deskripsi */}
+                        <Box>
+                            <TextField
+                                label="Deskripsi Dashboard"
+                                value={formDeskripsi}
+                                onChange={(e) => setFormDeskripsi(e.target.value)}
+                                fullWidth
+                                multiline
+                                rows={4}
+                                size="small"
+                                placeholder="Masukkan deskripsi untuk ditampilkan di halaman Dashboard..."
+                                helperText="Teks ini akan ditampilkan di halaman depan dashboard"
+                            />
+                        </Box>
                     </Stack>
 
                     <Divider sx={{ my: 3 }} />

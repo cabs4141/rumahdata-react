@@ -27,7 +27,7 @@ const navItems = [
       { name: "SEKOLAH", path: "/sekolah", permission: "sekolah" },
       { name: "PTK", path: "/ptk", permission: "ptk" },
       { name: "PPG", path: "/ppg", permission: "ppg" },
-      { name: "PEMETAAN KOMPETENSI", path: "/pemetaan", permission: "pemetaan_kompetensi" },
+      // { name: "PEMETAAN KOMPETENSI", path: "/pemetaan", permission: "pemetaan_kompetensi" },
       { name: "STATISTIK", path: "/statistik" },
     ],
   },
@@ -147,7 +147,7 @@ const AppSidebar = () => {
               <button
                 onClick={() => handleSubmenuToggle(index, menuType)}
                 className={`w-full flex items-center px-4 py-3 rounded-sm transition-all duration-200 group
-                ${isVisualActive ? "bg-[#1976d2] text-white shadow-md shadow-blue-500/20" : "text-gray-500 hover:bg-gray-100"}`}
+                ${isVisualActive ? "bg-[#1D4ED8] text-white shadow-md shadow-blue-700/20" : "text-gray-500 hover:bg-gray-100"}`}
               >
                 <span className={`${isVisualActive ? "text-white" : "text-gray-400 group-hover:text-gray-600"}`}>{nav.icon}</span>
                 {(isExpanded || isMobileOpen) && (
@@ -161,7 +161,7 @@ const AppSidebar = () => {
               <Link
                 to={nav.path}
                 className={`flex items-center px-4 py-3 rounded-sm transition-all duration-200 group
-                ${isActive(nav.path) ? "bg-[#1976d2] text-white shadow-md shadow-blue-500/30" : "text-gray-500 hover:bg-gray-100"}`}
+                ${isActive(nav.path) ? "bg-[#1D4ED8] text-white shadow-md shadow-blue-700/30" : "text-gray-500 hover:bg-gray-100"}`}
               >
                 <span className={`${isActive(nav.path) ? "text-white" : "text-gray-400 group-hover:text-gray-600"}`}>{nav.icon}</span>
                 {(isExpanded || isMobileOpen) && <span className="ml-3 text-sm font-semibold">{nav.name}</span>}
@@ -181,7 +181,7 @@ const AppSidebar = () => {
                       <Link
                         to={subItem.path}
                         className={`block py-2 pl-4 text-sm transition-colors rounded-r-lg
-                        ${isActive(subItem.path) ? "text-[#1976d2] font-bold border-l-2 border-[#1976d2] -ml-[1.5px] bg-[#1976d2]/5" : "text-gray-500 hover:text-[#1976d2] hover:bg-gray-50"}`}
+                        ${isActive(subItem.path) ? "text-[#1D4ED8] font-bold border-l-2 border-[#1D4ED8] -ml-[1.5px] bg-[#1D4ED8]/5" : "text-gray-500 hover:text-[#1D4ED8] hover:bg-gray-50"}`}
                       >
                         {subItem.name}
                       </Link>
@@ -208,8 +208,12 @@ const AppSidebar = () => {
           <img src={logoUrl} alt="Logo" width={38} className="flex-shrink-0" />
           {(isExpanded || isMobileOpen) && (
             <div className="ml-3">
-              <p className="font-extrabold text-[15px] leading-tight tracking-tight" style={{ color: siteTitleColor || "#1976d2" }}>{siteTitle}</p>
-              <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color: siteSubtitleColor || "#9ca3af" }}>{siteSubtitle}</p>
+              <p className="font-extrabold text-[15px] leading-tight tracking-tight" style={{ color: siteTitleColor || "#1D4ED8" }}>
+                {siteTitle}
+              </p>
+              <p className="text-[10px] font-bold tracking-widest uppercase" style={{ color: siteSubtitleColor || "#9ca3af" }}>
+                {siteSubtitle}
+              </p>
             </div>
           )}
         </Link>
